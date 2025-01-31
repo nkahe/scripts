@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Watch clipboard content for testing purposes. Exit with Ctrl-C.
+# Watch clipboard content for testing purposes.
 # Supports both Wayland (wl-paste) and X11 (xclip, xsel).
 
 # Check for available clipboard tool
@@ -15,7 +15,7 @@ else
   exit 1
 fi
 
-echo "Monitoring clipboard using: $CLIP_CMD"
+echo "Monitoring clipboard with ${CLIP_CMD}, press Ctrl-C to exit."
 echo -e "--------- Clipboard content: ----------\n"
 
 last_clipboard=""
