@@ -226,7 +226,7 @@ while [[ $# -gt 0 ]]; do
             -q | --quiet  ) NO_OUTPUT=true ;;
             -b | --bar    ) show_progress_bar=true ;;
             -p | --pop-up ) show_popup=true ;;
-            -h | --help   ) show_hint ;;
+            -h | --help   ) show_hint && exit 0;;
             -s | --silent ) be_silent=true ;;
             --version) echo "Terminal Timer version: " $version; exit 0 ;;
         esac
