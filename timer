@@ -33,7 +33,7 @@
 
 # This should be set in bash_profile / .zprofile:
 
-EXEC_COMMAND="$HOME/sounds/hackers_evolution/voice-complete.wav &>>/dev/null &"
+EXEC_COMMAND="$HOME/Sounds/hackers_evolution/voice-complete.wav &>>/dev/null &"
 
 # If settings variables are not defined, use defaults.
 
@@ -322,8 +322,7 @@ check_terminal () {
     # .. find find out the right Yakuake session_id if we aren't root.
     # It's used to send commands to Yakuake like to set tab titles in titles.zsh.
     if [[ ! $UID == 0 ]] ; then
-      session_id="$(qdbus org.kde.yakuake /yakuake/sessions sessionIdList |\
-        tr , "\n" | sort -g | tail -1 | tr -d '\n')"
+      session_id=$(qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.activeSessionId)
     fi
   elif pgrep "terminator" &> /dev/null; then
     readonly terminal=terminator
