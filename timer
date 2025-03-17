@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Bash countdown timer
 
 # Forked, made more modern and extended from script written by Timothy Lin.
@@ -45,13 +45,9 @@ EXEC_COMMAND="$HOME/Sounds/hackers_evolution/voice-complete.wav &>>/dev/null &"
 interrupt_message="${interrupt_message:='Countdown stopped by user interrupt.'}"
 
 "${show_progress_bar:=false}" # Progress bar visibility.
-
 "${update_tab_title:=true}"   # Print countdown time to tab title.
-
 "${CLEAR_SCREEN:=false}"      # Clear screen at timeup.
-
 "${debug_mode:=false}"        # Print debug.
-
 "${be_silent:=false}"         # Run silently: no output during countdown.
 
 readonly version="0.1"
@@ -92,7 +88,7 @@ Examples:
   $("basename" "$0") at 22:15 Countdown until 22:15 o'clock (10:15 PM).
 
 Options:
-  -c, --command <command>  Execute command <command> on timeup.
+  -c, --command <command>  Execute <command> on timeup.
   -f, --force   Force execute. This option must be located before 'at'.
   -h, --help    Display this help and exit.
   -b, --bar     Show a progress bar.
@@ -213,7 +209,7 @@ while [[ $# -gt 0 ]]; do
             -b | --bar    ) show_progress_bar=true ;;
             -h | --help   ) show_hint && exit 0 ;;
             -s | --silent ) be_silent=true ;;
-            --version) echo "Terminal Timer version: " $version && exit 0;;
+            -v | --version) echo "Terminal Timer version: " $version && exit 0;;
         esac
         previous_parameter="$parameter"
         continue
