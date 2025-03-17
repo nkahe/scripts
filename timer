@@ -27,9 +27,9 @@
 # --help kysyy messagea.
 # interrupt messagea  ei tule enää.
 
-#set -o errexit   # abort on nonzero exitstatus
-#set -o nounset   # abort on unbound variable
-#set -o pipefail  # don't hide errors within pipes
+# set -o errexit   # abort on nonzero exit status
+# set -o nounset   # abort on unbound variable
+# set -o pipefail  # don't hide errors within pipes
 
 # This should be set in bash_profile / .zprofile:
 
@@ -97,14 +97,14 @@ Options:
 }
 
 # function to get seconds from (hours,minutes,seconds)
-# usage: print_seconds days hours minutes secondss
+# usage: print_seconds days hours minutes seconds
 print_seconds () {
   if [[ $# -ne 4 ]]; then
     echo "Error: function print_seconds takes 4 parameters" >&2
     exit 1
   fi
   # hours, minutes, seconds
-  result=$(( "$result" + $2 * 3600 + $3 * 60 + $4 ))
+  result=$(( $2 * 3600 + $3 * 60 + $4 ))
   echo "$result"
 }
 
@@ -116,7 +116,6 @@ correct_date_sec () {
     echo "$final"
     return
   fi
-  SEC_PER_DAY=$(( 360 * 24 ))
   final=$(( $1 + SEC_PER_DAY ))
   if [[ "$final" -gt 0 ]]; then
     echo "$final"
