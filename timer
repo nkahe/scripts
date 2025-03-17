@@ -317,15 +317,13 @@ print_title () {
 # checks if we are running terminal which needs different commands for settings
 # a tab title.ausage: check_terminal
 check_terminal () {
-  if pgrep "yakuake" &> /dev/null; then
-    readonly terminal=yakuake
+  terminal=$(ps -o comm= -p $(ps -o ppid= -p "$PPID"))
+  if [[ $terminal == yakuake ]]; then
     # .. find find out the right Yakuake session_id if we aren't root.
     # It's used to send commands to Yakuake like to set tab titles in titles.zsh.
-    if [[ ! $UID == 0 ]] ; then
+    if [[ $UID != 0 ]] ; then
       session_id=$(qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.activeSessionId)
     fi
-  elif pgrep "terminator" &> /dev/null; then
-    readonly terminal=terminator
   fi
 }
 
