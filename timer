@@ -44,12 +44,6 @@ EXEC_COMMAND="$HOME/Sounds/hackers_evolution/voice-complete.wav &>>/dev/null &"
 
 interrupt_message="${interrupt_message:='Countdown stopped by user interrupt.'}"
 
-"${NOTIFY:=true}"         # Display timeup message as desktop notification.
-
-"${show_popup:=true}"     # Display timeup message as pop-up window.
-
-"${NO_OUTPUT:=false}"     # Do not show timeup message.
-
 "${show_progress_bar:=false}" # Progress bar visibility.
 
 "${update_tab_title:=true}"   # Print countdown time to tab title.
@@ -60,7 +54,6 @@ interrupt_message="${interrupt_message:='Countdown stopped by user interrupt.'}"
 
 "${be_silent:=false}"         # Run silently: no output during countdown.
 
-readonly default_timeup_message='Time is up!'
 readonly version="0.1"
 readonly SEC_PER_MIN=60
 readonly SEC_PER_HOUR=$((SEC_PER_MIN * 60))
@@ -94,22 +87,18 @@ Until given time:
   $("basename" "$0") [-f | --force] at [hours:][minutes:]seconds [options] [message]
 
 Examples:
-  $("basename" "$0") 10 'Remember the oven'   Countdown 10 minutes.
-  $("basename" "$0") 4m 'Tea is ready!'   Coundown 4 minutes with message.
+  $("basename" "$0") 10 && echo 'Remember the oven'   Countdown 10 minutes.
+  $("basename" "$0") 4m && notify-send 'Tea is ready!'   Coundown 4 minutes with notification.
   $("basename" "$0") 3m 30s   Countdown 3 minutes and 30 seconds
   $("basename" "$0") 2:25     Countdown 2 minutes and 25 seconds
   $("basename" "$0") 3:15:00  Countdown 3 hours and 15 minutes.
   $("basename" "$0") at 22:15 Countdown until 22:15 o'clock (10:15 PM).
 
-Main options:
+Options:
   -c, --command <command>  Execute command <command> on timeup.
-  -n, --notify  Display timeup message as a desktop notification using notify-send.
-  -p, --pop-up  Same as a graphical popup -window using zenity.
-Other options:
   -f, --force   Force execute. This option must be located before 'at'.
   -h, --help    Display this help and exit.
   -b, --bar     Show a progress bar.
-  -q, --quiet   Do not show any timeup message.
   -s, --silent  Do not show any output during countdown.
   -v, --version Show version info."
 }
@@ -223,9 +212,7 @@ while [[ $# -gt 0 ]]; do
     if [[ "${parameter:0:1}" == "-" ]]; then
         case "$parameter" in
             -f | --force  ) NO_CONFIRM=true ;;
-            -q | --quiet  ) NO_OUTPUT=true ;;
             -b | --bar    ) show_progress_bar=true ;;
-            -p | --pop-up ) show_popup=true ;;
             -h | --help   ) show_hint && exit 0 ;;
             -s | --silent ) be_silent=true ;;
             --version) echo "Terminal Timer version: " $version && exit 0;;
@@ -261,8 +248,7 @@ until_date=$(( time_now + sec_rem ))
 # Total countdown time in seconds. This is constant unlike sec_rem.
 total_time=$(( until_date - $(date +%s) ))
 
-# quit function
-# usage: quit exitcode [message]
+# usage: quit <exit code> [quit message]
 quit () {
     tput cnorm # restore cursor
     stty echo  # restore keyboard echo
@@ -270,30 +256,7 @@ quit () {
     if [[ $CLEAR_SCREEN == true ]]; then
       clear
     fi
-    # Exit if countdown is interrupted.
-    if [[ "$1" -ne 0 ]]; then
-      exit "$1"
-    fi
 
-    # execute command on timeup is it's assigned.
-    [[ "$1" -eq 0 ]] && [[ -n "$EXEC_COMMAND" ]] && eval "$EXEC_COMMAND"
-
-    # Print message unless no output -option is set or there are no message.
-    if [[ $NO_OUTPUT != true ]] && [ -n "$2" ]; then # print message
-        if [[ $show_popup = true ]]; then
-            # TODO: test if zenity exists. other solutions to show pop-ups?
-            if command -v zenity &>/dev/null; then
-              zenity --info --title="Timer" --text="$2" 2>/dev/null
-            else
-              echo "Error: Displaying popups needs Zenity to be installed."
-            fi
-        else
-            # Send a notification if set.
-            [[ $NOTIFY = true ]] && notify-send "Timer" "$2"
-            # Display message on terminal.
-            echo "$2"
-        fi
-    fi
     exit "$1"
 }
 trap 'quit 1 "$interrupt_message"' INT  # set the quit function to be the Control+C handler
@@ -383,8 +346,7 @@ silent_countdown() {
     fi
   done
 
-  message="${timeup_message:=$default_timeup_message}"
-  quit 0 "$message"
+  quit 0
 }
 
 # Prepare screen for countdown.
@@ -481,4 +443,4 @@ while [[ $sec_rem -gt 0 ]]; do
      [[ "$ch" == "q" ]] && quit 1 "$interrupt_message"
 done
 
-quit 0 "${timeup_message:=$default_timeup_message}"
+quit 0
