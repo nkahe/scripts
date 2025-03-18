@@ -27,7 +27,7 @@
 # --help kysyy messagea.
 # interrupt messagea  ei tule enää.
 
-# set -o errexit   # abort on nonzero exit status
+# set -o errexit   # abort on non-zero exit status
 # set -o nounset   # abort on unbound variable
 # set -o pipefail  # don't hide errors within pipes
 
@@ -98,7 +98,7 @@ Options:
 
 # function to get seconds from (hours,minutes,seconds)
 # usage: print_seconds days hours minutes seconds
-print_seconds () {
+function print_seconds () {
   if [[ $# -ne 4 ]]; then
     echo "Error: function print_seconds takes 4 parameters" >&2
     exit 1
@@ -110,7 +110,7 @@ print_seconds () {
 
 # Correct date by trying to add some time to it.
 # usage: correct_date_sec seconds
-correct_date_sec () {
+function correct_date_sec () {
   final=$1
   if [[ "$final" -gt 0 ]]; then
     echo "$final"
@@ -131,7 +131,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 # identify the time format and assign number of seconds by print_seconds.
-assign_time () {
+function assign_time () {
   # H:M:S
   if [[ "$parameter" =~ ^([0-9]+):([0-9]+):([0-9]+)$ ]]; then
     sec_rem=$(print_seconds 0 BASH_REMATCH[1] BASH_REMATCH[2] BASH_REMATCH[3])
@@ -170,7 +170,7 @@ Type $("basename" "$0") -h for help." >&2
 }
 
 # Set countdown at certain clock time.
-set_at_time() {
+function set_at_time() {
   UNTIL=$(date -d "$parameter" +%s)
   if [[ $? -ne 0 ]]; then
     exit 1
@@ -208,7 +208,7 @@ while [[ $# -gt 0 ]]; do
             -b | --bar    ) show_progress_bar=true ;;
             -h | --help   ) show_hint && exit 0 ;;
             -s | --silent ) be_silent=true ;;
-            -v | --version) echo "Terminal Timer version: " $version && exit 0;;
+            -v | --version) echo "Terminal Timer version: " $version && exit 0 ;;
         esac
         previous_parameter="$parameter"
         continue
@@ -241,7 +241,7 @@ until_date=$(( time_now + sec_rem ))
 total_time=$(( until_date - $(date +%s) ))
 
 # usage: quit <exit code> [quit message]
-quit () {
+function quit () {
   tput cnorm # restore cursor
   stty echo  # restore keyboard echo
 
@@ -256,7 +256,7 @@ trap 'quit 1 "$interrupt_message"' INT
 
 # print tab title
 # usage: print_title [title]
-print_title () {
+function print_title () {
   # Some terminals accept only different commands.
   case "$terminal" in
     yakuake)
@@ -273,7 +273,7 @@ print_title () {
 
 # checks if we are running terminal which needs different commands for settings
 # a tab title.ausage: check_terminal
-check_terminal () {
+function check_terminal () {
   terminal=$(ps -o comm= -p $(ps -o ppid= -p "$PPID"))
   if [[ $terminal == yakuake ]]; then
     # .. find find out the right Yakuake session_id if we aren't root.
@@ -286,7 +286,7 @@ check_terminal () {
 
 # print a progress bar
 # usage: show_progress_bar
-show_progress_bar () {
+function show_progress_bar () {
   # Tämän pitäis mennä kuin sekunnit eteenpäin, mutta menee hieman nopeampaa ja
   # epäsynkkaan.
   # progress=$[$progress + 1]
@@ -321,7 +321,7 @@ show_progress_bar () {
 }
 
 # If silent attribute is given countdown with no output.
-silent_countdown() {
+function silent_countdown() {
   while [[ $sec_rem -gt 0 ]]; do
     # calculate remaining seconds
     sec_rem=$(( until_date - time_now ))
@@ -344,7 +344,7 @@ silent_countdown() {
 }
 
 # Prepare screen for countdown.
-prepare_screen() {
+function prepare_screen() {
   clear
   # tput cup 0 0
   # hide cursor
@@ -353,7 +353,7 @@ prepare_screen() {
   stty -echo
 }
 
-if_running_background() {
+function if_running_background() {
   if [[ $(ps -o stat= -p $$) != *+* ]]; then
     return 0
   else
