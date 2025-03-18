@@ -231,8 +231,10 @@ total_time=$(( until_date - $(date +%s) ))
 
 # usage: quit <exit code> [quit message]
 function quit () {
-  tput cnorm # restore cursor
-  stty echo  # restore keyboard echo
+  # Restore cursor
+  tput cnorm
+  # Restore keyboard echo
+  stty echo
 
   if [[ $CLEAR_SCREEN == true ]]; then
     clear
@@ -411,10 +413,9 @@ while [[ $sec_rem -gt 0 ]]; do
      printf "%0.s " {1..33}
      echo
 
-    [[ $show_progress_bar == true ]] && show_progress_bar
+     [[ $show_progress_bar == true ]] && show_progress_bar
 
      echo "Press [q] to stop counting           "
-     printf "%0.s " {1..33}
 
      read -n 1 -t 1 ch
      [[ "$ch" == "q" ]] && quit 1 "$interrupt_message"
