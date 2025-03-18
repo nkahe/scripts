@@ -342,12 +342,9 @@ function prepare_screen() {
   stty -echo
 }
 
+
 function if_running_background() {
-  if [[ $(ps -o stat= -p $$) != *+* ]]; then
-    return 0
-  else
-    return 1
-  fi
+  [[ $(ps -o stat= -p $$) != *+* ]]
 }
 
 # Calculate the date of timeout
