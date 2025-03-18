@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# Meant to be run by DE / WM at startup.
+#
+if ! command -v conky &>>/dev/null; then
+  exit 1
+fi
+flags="--quiet --daemonize --config=$HOME/.config/conky/conky.conf"
+sleep 3
+killall conky
+sleep 2
+conky $flags --xinerama-head=0 &
+conky $flags --xinerama-head=1 &
