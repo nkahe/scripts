@@ -6,7 +6,6 @@
 
 # TODO:
 
-# -h/--help pyytää nyt aikaa.
 # - -d --daemon -optio. ajetaan kokonaan taustalla.
 #     kävis näin: echo 'sleep N; {command}' | at now tai
 #     (sleep N; {command}) &

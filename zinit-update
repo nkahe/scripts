@@ -1,6 +1,10 @@
-#!/bin/sh
+#!/bin/zsh
 
-# This is meant to run by cronie-anacron, set in ~/.config/anacrontab
+# This is meant to run by cronie-anacron.
+
+if ! command -v zinit &>/dev/null; then
+  exit 1
+fi
 
 # Zinit plugin manager.
 zsh -ic 'zinit self-update -q; zinit update --all -q'
