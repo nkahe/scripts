@@ -254,8 +254,8 @@ function quit () {
 # set the quit function to be the Control+C handler
 trap 'quit 1 "$interrupt_message"' INT
 
-# print tab title
-# usage: print_title [title]
+# Print terminal tab title
+# Usage: print_title <title>
 function print_title () {
   # Some terminals accept only different commands.
   case "$terminal" in
@@ -329,10 +329,10 @@ function silent_countdown() {
     # Calculate progress percent.
     percent=$(( (total_time - sec_rem) * 100 / total_time ))
 
-    # Calculate the date of timeout once
-    if [[ -z "$TIMEOUT_DATE" ]]; then
-      TIMEOUT_DATE=$(date -d "now +$sec_rem sec" )
-    fi
+    # # Calculate the date of timeout once
+    # if [[ -z "$TIMEOUT_DATE" ]]; then
+    #   TIMEOUT_DATE=$(date -d "now +$sec_rem sec" )
+    # fi
     # wait for 0.9 second and monitor user input
     read -r -n 1 -t 1 ch
     if [[ "$ch" == q ]]; then
@@ -361,6 +361,9 @@ function if_running_background() {
   fi
 }
 
+# Calculate the date of timeout
+TIMEOUT_DATE=$(date -d "now +$sec_rem sec" )
+
 if [[ $be_silent == true ]] || if_running_background; then
   silent_countdown
 fi
@@ -375,9 +378,6 @@ while [[ $sec_rem -gt 0 ]]; do
 
     # Calculate progress percent.
     percent=$(( (total_time - sec_rem) * 100 / total_time ))
-
-    # Calculate the date of timeout once
-    [[ -z "$TIMEOUT_DATE" ]] && TIMEOUT_DATE=$(date -d "now +$sec_rem sec" )
 
     interval=$sec_rem
     seconds=$(( interval % SEC_PER_MIN ))
