@@ -31,14 +31,7 @@
 # set -o nounset   # abort on unbound variable
 # set -o pipefail  # don't hide errors within pipes
 
-# This should be set in bash_profile / .zprofile:
-
-EXEC_COMMAND="$HOME/Sounds/hackers_evolution/voice-complete.wav &>>/dev/null &"
-
 # If settings variables are not defined, use defaults.
-
-# If you want to set command to execute on timeup put this on your shell's rc file:
-# EXEC_COMMAND=<commmand>
 
 # Settings below should be either true or false.
 
@@ -88,7 +81,6 @@ Examples:
   $("basename" "$0") at 22:15 Countdown until 22:15 o'clock (10:15 PM).
 
 Options:
-  -c, --command <command>  Execute <command> on timeup.
   -f, --force   Force execute. This option must be located before 'at'.
   -h, --help    Display this help and exit.
   -b, --bar     Show a progress bar.
@@ -219,9 +211,6 @@ while [[ $# -gt 0 ]]; do
     fi
     case "$previous_parameter" in
         at ) set_at_time ;;
-        -c | --command) # execute a command on timeup.
-            EXEC_COMMAND="$parameter"
-            row=$((row + 3)) ;;
         *) assign_time ;;
     esac
     previous_parameter=""
@@ -408,16 +397,16 @@ while [[ $sec_rem -gt 0 ]]; do
     # Check how many lines we need for output once.
     if [[ -z $lines ]]; then
         if [ $hours -gt 0 ]; then
-          lines=3
+          readonly lines=3
         elif [ $minutes -gt 0 ]; then
-          lines=2
+          readonly lines=2
         else
-          lines=1
+          readonly lines=1
         fi
     fi
 
      # Print necessary lines based on the original time.
-     [[ $lines -ge 3 ]] && echo "Hours:    $hours                     "
+     [[ $hours -ge 3 ]] && echo "Hours:    $hours                     "
      [[ $lines -ge 2 ]] && echo "Minutes:  $minutes                   "
      printf "Seconds:  $seconds"
      printf "%0.s " {1..33}
@@ -426,11 +415,6 @@ while [[ $sec_rem -gt 0 ]]; do
      echo
 
     [[ $show_progress_bar == true ]] && show_progress_bar
-
-     if [[ -n "$EXEC_COMMAND" ]]; then
-        echo "Executing following command on timeup:"
-        echo -e "$EXEC_COMMAND\n"
-     fi
 
      echo "Press [q] to stop counting           "
      printf "%0.s " {1..33}
