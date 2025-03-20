@@ -120,7 +120,7 @@ function correct_date_sec () {
     echo "0"
 }
 
-# identify the time format and assign number of seconds by print_seconds.
+# Assign number of seconds by print_seconds based on timer format.
 function assign_time () {
     # H:M:S
     if [[ "$parameter" =~ ^([0-9]+):([0-9]+):([0-9]+)$ ]]; then
@@ -147,14 +147,12 @@ function assign_time () {
     else
         if [[ "${previous_parameter:0:1}" == "-" ]]; then
             echo "Error: Not a valid option: \"$previous_parameter\". \
-Type $("basename" "$0") -h for help." >&2
+Type $("basename" "$0") -h for available options." >&2
             exit 1
         else
-            true
-            # TODO: Do these need to be added?
-            # echo "Error: Couldn't parse time format for: \"$parameter\".
-            # Type $("basename" "$0") -h for help."
-            # exit 1
+            echo "Error: Couldn't parse time format for: \"$parameter\". \
+Type \"$("basename" "$0") -h\" for help." >&2
+            exit 1
         fi
     fi
 }
@@ -199,6 +197,9 @@ while [[ $# -gt 0 ]]; do
             -h | --help   ) show_hint && exit 0 ;;
             -s | --silent ) be_silent=true ;;
             -v | --version) echo "Terminal Timer version: " $version && exit 0 ;;
+            *) echo "Error: Not a valid option: \"$parameter\". \
+Type $("basename" "$0") -h for available options." >&2
+            exit 1
         esac
         previous_parameter="$parameter"
         continue
@@ -335,12 +336,9 @@ function silent_countdown() {
 function prepare_screen() {
     clear
     # tput cup 0 0
-    # hide cursor
-    tput civis
-    # disable keyboard echo
-    stty -echo
+    tput civis  # hide cursor
+    stty -echo  # disable keyboard echo
 }
-
 
 function if_running_background() {
     [[ $(ps -o stat= -p $$) != *+* ]]
@@ -386,8 +384,7 @@ while [[ $sec_rem -gt 0 ]]; do
 
     echo "Now:   $(date)"
     echo "Until: $TIMEOUT_DATE"
-    printf "%0.s-" {1..33}
-    echo
+    printf "%0.s-" {1..33}; echo
 
     # Check how many lines we need for output once.
     if [[ -z $lines ]]; then
