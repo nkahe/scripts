@@ -22,8 +22,6 @@
 
 # FIXME
 
-# -t ei toiminut.
-# --help kysyy messagea.
 # interrupt messagea  ei tule enää.
 
 # set -o errexit   # abort on non-zero exit status
@@ -87,8 +85,15 @@ Options:
   -v, --version Show version info."
 }
 
-# function to get seconds from (hours,minutes,seconds)
-# usage: print_seconds days hours minutes seconds
+
+# If no parameters is given.
+if [[ $# -eq 0 ]]; then
+    show_hint
+    exit 1
+fi
+
+# Get seconds from (hours,minutes,seconds)
+# usage: print_seconds <days> <hours> <minutes> <seconds>
 function print_seconds () {
     if [[ $# -ne 4 ]]; then
         echo "Error: function print_seconds takes 4 parameters" >&2
@@ -114,12 +119,6 @@ function correct_date_sec () {
     fi
     echo "0"
 }
-
-# If no parameters is given.
-if [[ $# -eq 0 ]]; then
-    show_hint
-    exit 1
-fi
 
 # identify the time format and assign number of seconds by print_seconds.
 function assign_time () {
@@ -282,7 +281,7 @@ function show_progress_bar () {
     # progress=$[$progress + 1]
     # progress=$[$total_time - $sec_rem]
     # Progress bar character length
-    bar_length=$(( col * percent / 100 ))
+    bar_length=$(( col * progress_percent / 100 ))
     # sec_done=$[$total_time - $sec_rem]
     printf "["
     # printf "%*s" $COLUMNS "]"
@@ -307,7 +306,7 @@ function show_progress_bar () {
         echo "Bar length  " $bar_length "  "
         echo "                             "
     fi
-    # percent=$[$progress * 100 / $total_time]
+    # progress_percent=$[$progress * 100 / $total_time]
 }
 
 # If silent attribute is given countdown with no output.
@@ -316,8 +315,7 @@ function silent_countdown() {
         # calculate remaining seconds
         sec_rem=$(( until_date - time_now ))
 
-        # Calculate progress percent.
-        percent=$(( (total_time - sec_rem) * 100 / total_time ))
+        progress_percent=$(( (total_time - sec_rem) * 100 / total_time ))
 
         # # Calculate the date of timeout once
         # if [[ -z "$TIMEOUT_DATE" ]]; then
@@ -363,8 +361,7 @@ while [[ $sec_rem -gt 0 ]]; do
     # Calculate remaining seconds
     sec_rem=$(( until_date - $(date +%s) ))
 
-    # Calculate progress percent.
-    percent=$(( (total_time - sec_rem) * 100 / total_time ))
+    progress_percent=$(( (total_time - sec_rem) * 100 / total_time ))
 
     interval=$sec_rem
     seconds=$(( interval % SEC_PER_MIN ))
@@ -408,7 +405,7 @@ while [[ $sec_rem -gt 0 ]]; do
     [[ $lines -ge 2 ]] && echo "Minutes:  $minutes                   "
     printf "Seconds:  $seconds"
     printf "%0.s " {1..33}
-    echo -e "\nProgress: $percent %                 "
+    echo -e "\nProgress: $progress_percent %                 "
     printf "%0.s " {1..33}
     echo
 
