@@ -398,7 +398,7 @@ while [[ $sec_rem -gt 0 ]]; do
     fi
 
     # Print necessary lines based on the original time.
-    [[ $hours -ge 3 ]] && echo "Hours:    $hours                     "
+    [[ $lines -ge 3 ]] && echo "Hours:    $hours                     "
     [[ $lines -ge 2 ]] && echo "Minutes:  $minutes                   "
     printf "Seconds:  $seconds"
     printf "%0.s " {1..33}
