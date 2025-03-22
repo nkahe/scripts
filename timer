@@ -20,10 +20,6 @@
 # standard inputista lukeminen
 # https://stackoverflow.com/questions/18761209/how-to-make-a-bash-function-which-can-read-from-standard-input
 
-# FIXME
-
-# interrupt messagea  ei tule enää.
-
 # set -o errexit   # abort on non-zero exit status
 # set -o nounset   # abort on unbound variable
 # set -o pipefail  # don't hide errors within pipes
@@ -32,7 +28,7 @@
 
 # Settings below should be either true or false.
 
-interrupt_message="${interrupt_message:='Countdown stopped by user interrupt.'}"
+interrupt_message="${interrupt_message:=Countdown stopped by user interrupt.}"
 
 "${show_progress_bar:=false}" # Progress bar visibility.
 "${update_tab_title:=true}"   # Print countdown time to tab title.
@@ -84,7 +80,6 @@ Options:
   -s, --silent  Do not show any output during countdown.
   -v, --version Show version info."
 }
-
 
 # If no parameters is given.
 if [[ $# -eq 0 ]]; then
@@ -237,10 +232,13 @@ function quit () {
 
     if [[ $CLEAR_SCREEN == true ]]; then
         clear
+    elif [[ -n "$2" ]]; then
+        echo -e "\n$2"
     fi
 
     exit "$1"
 }
+
 # set the quit function to be the Control+C handler
 trap 'quit 1 "$interrupt_message"' INT
 
@@ -257,7 +255,8 @@ function print_title () {
             ;;
         terminator)
             printf '\033]0;%s\a' "$tab_title" ;;
-        *) printf '\e]1;%s\a' "$tab_title"  ;;
+        *)
+            printf '\e]1;%s\a' "$tab_title"  ;;
     esac
 }
 
@@ -318,11 +317,6 @@ function silent_countdown() {
 
         progress_percent=$(( (total_time - sec_rem) * 100 / total_time ))
 
-        # # Calculate the date of timeout once
-        # if [[ -z "$TIMEOUT_DATE" ]]; then
-        #   TIMEOUT_DATE=$(date -d "now +$sec_rem sec" )
-        # fi
-        # wait for 0.9 second and monitor user input
         read -r -n 1 -t 1 ch
         if [[ "$ch" == q ]]; then
             quit 1 "$interrupt_message"
@@ -397,7 +391,7 @@ while [[ $sec_rem -gt 0 ]]; do
         fi
     fi
 
-    # Print necessary lines based on the original time.
+    # Print necessary lines based on the amount needed at start.
     [[ $lines -ge 3 ]] && echo "Hours:    $hours                     "
     [[ $lines -ge 2 ]] && echo "Minutes:  $minutes                   "
     printf "Seconds:  $seconds"
