@@ -6,6 +6,7 @@
 
 # TODO:
 
+# - Support more terminals for tab title update.
 # - -d --daemon -optio. ajetaan kokonaan taustalla.
 #     kävis näin: echo 'sleep N; {command}' | at now tai
 #     (sleep N; {command}) &
@@ -15,7 +16,7 @@
 # - timerin ajo taustalle &:lla toimimaan kunnolla.
 # - samoin jos käyttää Ctrl-z, että kursori palautuisi.
 # - optio, jolla figletillä printataan jäljellä oleva aika samassa muodossa,
-#   kuin tabi-tekstissä.
+#   kuin tabi-tekstissä?
 
 # standard inputista lukeminen
 # https://stackoverflow.com/questions/18761209/how-to-make-a-bash-function-which-can-read-from-standard-input
@@ -42,11 +43,7 @@ readonly SEC_PER_HOUR=$((SEC_PER_MIN * 60))
 readonly SEC_PER_DAY=$((SEC_PER_HOUR * 24))
 time_now=$(date +%s)
 
-# Defaults for progress bar
-row=7
 total_time=0
-col=$(tput cols)
-col=$(( col -5 ))
 
 show_hint () {
 
@@ -55,14 +52,13 @@ Timer can be set to count amount of time or until given clock time. One of three
 different forms can be used:
 
 Usage, countdown amount of time:
-  $("basename" "$0") [-f | --force] NUMBER[SUFFIX]... [options] [message]
-  $("basename" "$0") [-f | --force] [hours:][minutes:]<seconds> [options] [message]
+  $("basename" "$0") <number>[suffix]... [options]
+  $("basename" "$0") [hours:][minutes:]<seconds> [options]
 
-  Suffix can be: [s]econds, [m]inutes (default), [h]ours. Many NUMBER[SUFFIX]
-  can be used separated by space. Use quotations marks if message consists
-  several word or special characters.
+  Suffix can be: [s]econds, [m]inutes (default) or [h]ours. If many are given
+  sum of values is used.
 
-Until given time:
+Countdown until given time:
   $("basename" "$0") [-f | --force] at [hours:][minutes:]seconds [options] [message]
 
 Examples:
@@ -223,12 +219,11 @@ until_date=$(( time_now + sec_rem ))
 # Total countdown time in seconds. This is constant unlike sec_rem.
 total_time=$(( until_date - $(date +%s) ))
 
+# Quit gracefully during countdown.
 # usage: quit <exit code> [quit message]
 function quit () {
-    # Restore cursor
-    tput cnorm
-    # Restore keyboard echo
-    stty echo
+    tput cnorm  # Restore cursor
+    stty echo   # Restore keyboard echo
 
     if [[ $CLEAR_SCREEN == true ]]; then
         clear
@@ -273,18 +268,21 @@ function check_terminal () {
     fi
 }
 
+
+# Defaults for progress bar
+col=$(tput cols)
+col=$(( col -5 ))
+
 # print a progress bar
-# usage: show_progress_bar
+# usage: show_progress_bar <number of lines needed for time>
 function show_progress_bar () {
     # Tämän pitäis mennä kuin sekunnit eteenpäin, mutta menee hieman nopeampaa ja
     # epäsynkkaan.
-    # progress=$[$progress + 1]
-    # progress=$[$total_time - $sec_rem]
+
     # Progress bar character length
     bar_length=$(( col * progress_percent / 100 ))
     # sec_done=$[$total_time - $sec_rem]
     printf "["
-    # printf "%*s" $COLUMNS "]"
 
     # Assign output to variable f which is used in next command.
     printf -v f "%${bar_length}s>"
@@ -292,11 +290,8 @@ function show_progress_bar () {
     # printf -v f "%$(echo $bar_length)s>"
     printf "%s\r" "${f// /=}"
 
-    # Print the "]" to the end of bar.
-    # TODO: rivi muuttuja row määrittely ei toimi, jos title tai message on yli
-    # rivin mittainen. pitäisi saada silleen, että riviä ei tarvi erikseen
-    # määritellä, vaan tekee samalle riville, mihin edellinen komento.
-    tput cup $row $(( col + 2 ))
+    # Cursor placement for end of progress bar.
+    tput cup $(( $1 + 5 )) $(( col + 2 ))
 
     printf "]\n\n"
     if [[ $debug_mode == "true" ]]; then
@@ -306,7 +301,6 @@ function show_progress_bar () {
         echo "Bar length  " $bar_length "  "
         echo "                             "
     fi
-    # progress_percent=$[$progress * 100 / $total_time]
 }
 
 # If silent attribute is given countdown with no output.
@@ -378,7 +372,8 @@ while [[ $sec_rem -gt 0 ]]; do
 
     echo "Now:   $(date)"
     echo "Until: $TIMEOUT_DATE"
-    printf "%0.s-" {1..33}; echo
+
+    printf "%0.s-" {1..35}; echo
 
     # Check how many lines we need for output once.
     if [[ -z $lines ]]; then
@@ -400,7 +395,7 @@ while [[ $sec_rem -gt 0 ]]; do
     printf "%0.s " {1..33}
     echo
 
-    [[ $show_progress_bar == true ]] && show_progress_bar
+    [[ $show_progress_bar == true ]] && show_progress_bar "$lines"
 
     echo "Press [q] to stop counting           "
 
