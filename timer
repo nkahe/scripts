@@ -23,19 +23,19 @@
 
 # set -o errexit   # abort on non-zero exit status
 # set -o nounset   # abort on unbound variable
-# set -o pipefail  # don't hide errors within pipes
+set -o pipefail  # don't hide errors within pipes
 
 # If settings variables are not defined, use defaults.
 
 # Settings below should be either true or false.
 
-interrupt_message="${interrupt_message:=Countdown stopped by user interrupt.}"
+interrupt_message="Countdown stopped by user interrupt."
 
-"${show_progress_bar:=false}" # Progress bar visibility.
-"${update_tab_title:=true}"   # Print countdown time to tab title.
-"${CLEAR_SCREEN:=false}"      # Clear screen at timeup.
-"${debug_mode:=false}"        # Print debug.
-"${be_silent:=false}"         # Run silently: no output during countdown.
+show_progress_bar="false"  # Progress bar visibility.
+update_tab_title="true"    # Print countdown time to tab title.
+CLEAR_SCREEN="false"       # Clear screen at timeup.
+debug_mode="false"         # Print debug.
+be_silent="false"          # Run silently no output during countdown.
 
 readonly version="0.1"
 readonly SEC_PER_MIN=60
@@ -45,15 +45,15 @@ time_now=$(date +%s)
 
 total_time=0
 
-show_hint () {
+function show_hint () {
 
 echo "\
 Timer can be set to count amount of time or until given clock time. One of three
-different forms can be used:
+different forms can be used
 
-Usage, countdown amount of time:
+Usage, countdown amount of time
   $("basename" "$0") <number>[suffix]... [options]
-  $("basename" "$0") [hours:][minutes:]<seconds> [options]
+  $("basename" "$0") [hours][minutes:]<seconds> [options]
 
   Suffix can be: [s]econds, [m]inutes (default) or [h]ours. If many are given
   sum of values is used.
@@ -78,7 +78,7 @@ Options:
 }
 
 # If no parameters is given.
-if [[ $# -eq 0 ]]; then
+if [[   $# -eq 0 ]]; then
     show_hint
     exit 1
 fi
