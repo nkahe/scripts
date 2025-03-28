@@ -26,7 +26,6 @@ time_now=$(date +%s)
 total_time=0
 
 function show_hint () {
-
 echo "\
 Timer can be set to count amount of time or until given clock time. One of three
 different forms can be used
@@ -58,7 +57,7 @@ Options:
 }
 
 # If no parameters is given.
-if [[   $# -eq 0 ]]; then
+if [[ $# -eq 0 ]]; then
     show_hint
     exit 1
 fi
@@ -200,8 +199,8 @@ until_date=$(( time_now + sec_rem ))
 total_time=$(( until_date - $(date +%s) ))
 
 # Quit gracefully during countdown.
-# usage: quit <exit code> [quit message]
-function quit () {
+# usage: cleanup_and_exit <exit code> [quit message]
+function cleanup_and_exit () {
     tput cnorm  # Restore cursor
     stty echo   # Restore keyboard echo
 
@@ -215,7 +214,7 @@ function quit () {
 }
 
 # set the quit function to be the Control+C handler
-trap 'quit 1 "$interrupt_message"' INT
+trap 'cleanup_and_exit 1 "$interrupt_message"' INT
 
 # Print terminal tab title
 # Usage: print_title <title>
@@ -288,16 +287,13 @@ function silent_countdown() {
     while [[ $sec_rem -gt 0 ]]; do
         # calculate remaining seconds
         sec_rem=$(( until_date - time_now ))
-
         progress_percent=$(( (total_time - sec_rem) * 100 / total_time ))
-
         read -r -n 1 -t 1 ch
         if [[ "$ch" == q ]]; then
-            quit 1 "$interrupt_message"
+            cleanup_and_exit 1 "$interrupt_message"
         fi
     done
-
-    quit 0
+    cleanup_and_exit 0
 }
 
 # Prepare screen for countdown.
@@ -383,8 +379,8 @@ while [[ $sec_rem -gt 0 ]]; do
 
     # Wait a second and quit if user press 'q' else continue.
     read -n 1 -t 1 ch || true
-    [[ "$ch" == "q" ]] && quit 1 "$interrupt_message"
+    [[ "$ch" == "q" ]] && cleanup_and_exit 1 "$interrupt_message"
 done
 
-quit 0
+cleanup_and_exit 0
 # vim: set expandtab shiftwidth=4 softtabstop=4 :
