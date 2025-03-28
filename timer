@@ -17,11 +17,11 @@ CLEAR_SCREEN="false"       # Clear screen at timeup.
 debug_mode="false"         # Print debug.
 be_silent="false"          # Run silently no output during countdown.
 
-readonly version="0.1"
+readonly VERSION="0.1"
 readonly SEC_PER_MIN=60
 readonly SEC_PER_HOUR=$((SEC_PER_MIN * 60))
 readonly SEC_PER_DAY=$((SEC_PER_HOUR * 24))
-time_now=$(date +%s)
+TIME_NOW=$(date +%s)
 
 total_time=0
 
@@ -120,7 +120,7 @@ function assign_time () {
 Type $("basename" "$0") -h for available options." >&2
             exit 1
         else
-            echo "Error: Couldn't parse time format for: \"$parameter\". \
+            echo "Error: Incorrect time format: \"$parameter\". \
 Type \"$("basename" "$0") -h\" for help." >&2
             exit 1
         fi
@@ -133,7 +133,7 @@ function set_at_time() {
     if [[ $? -ne 0 ]]; then
         exit 1
     fi
-    sec_rem=$(( UNTIL - time_now ))
+    sec_rem=$(( UNTIL - TIME_NOW ))
     if [[ $sec_rem -lt 1 ]]; then
         sec_rem=$(correct_date_sec $sec_rem)
         if [[ "$sec_rem" -lt 1 ]]; then
@@ -166,7 +166,7 @@ while [[ $# -gt 0 ]]; do
             -b | --bar    ) show_progress_bar=true ;;
             -h | --help   ) show_hint && exit 0 ;;
             -s | --silent ) be_silent=true ;;
-            -v | --version) echo "Terminal Timer version: " $version && exit 0 ;;
+            -v | --version) echo "Terminal Timer version: " $VERSION && exit 0 ;;
             *) echo "Error: Not a valid option: \"$parameter\". \
 Type $("basename" "$0") -h for available options." >&2
             exit 1
@@ -193,7 +193,7 @@ if [[ $sec_rem -eq 0 ]]; then
 fi
 
 # calculate the date when time up
-until_date=$(( time_now + sec_rem ))
+until_date=$(( TIME_NOW + sec_rem ))
 
 # Total countdown time in seconds. This is constant unlike sec_rem.
 total_time=$(( until_date - $(date +%s) ))
@@ -286,7 +286,7 @@ function show_progress_bar () {
 function silent_countdown() {
     while [[ $sec_rem -gt 0 ]]; do
         # calculate remaining seconds
-        sec_rem=$(( until_date - time_now ))
+        sec_rem=$(( until_date - TIME_NOW ))
         progress_percent=$(( (total_time - sec_rem) * 100 / total_time ))
         read -r -n 1 -t 1 ch
         if [[ "$ch" == q ]]; then
@@ -296,27 +296,22 @@ function silent_countdown() {
     cleanup_and_exit 0
 }
 
-# Prepare screen for countdown.
-function prepare_screen() {
-    clear
-    # tput cup 0 0
-    tput civis  # hide cursor
-    stty -echo  # disable keyboard echo
-}
+# Calculate the date of timeout
+TIMEOUT_DATE=$(date -d "now +$sec_rem sec" )
 
 function if_running_background() {
     [[ $(ps -o stat= -p $$) != *+* ]]
 }
-
-# Calculate the date of timeout
-TIMEOUT_DATE=$(date -d "now +$sec_rem sec" )
 
 if [[ $be_silent == true ]] || if_running_background; then
     silent_countdown
 fi
 
 check_terminal
-prepare_screen
+clear
+# tput cup 0 0
+tput civis  # hide cursor
+stty -echo  # disable keyboard echo
 
 lines=0
 
