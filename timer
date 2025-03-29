@@ -17,6 +17,12 @@ CLEAR_SCREEN="false"       # Clear screen at timeup.
 debug_mode="false"         # Print debug.
 be_silent="false"          # Run silently no output during countdown.
 
+readonly PAT_HMS="^([0-9]+):([0-9]+):([0-9]+)$"
+readonly PAT_MS="^([0-9]+):([0-9]+)$"
+readonly PAT_M="^([0-9]+)$"
+readonly PAT_H_VERBAL="^([0-9]+)h(.*)"
+readonly PAT_M_VERBAL="^([0-9]+)m(.*)"
+readonly PAT_S_VERBAL="^([0-9]+)s(.*)"
 readonly VERSION="0.1"
 readonly SEC_PER_MIN=60
 readonly SEC_PER_HOUR=$((SEC_PER_MIN * 60))
@@ -90,28 +96,24 @@ function correct_date_sec () {
     echo "0"
 }
 
+
 # Assign number of seconds by print_seconds based on timer format.
 function assign_time () {
-    # H:M:S
-    if [[ "$parameter" =~ ^([0-9]+):([0-9]+):([0-9]+)$ ]]; then
+    if [[ "$parameter" =~ $PAT_HMS ]]; then          # H:M:S
         sec_rem=$(print_seconds 0 BASH_REMATCH[1] BASH_REMATCH[2] BASH_REMATCH[3])
-    # M:S
-    elif [[ "$parameter" =~ ^([0-9]+):([0-9]+)$ ]]; then
+    elif [[ "$parameter" =~ $PAT_MS ]]; then         # M:S
         sec_rem=$(print_seconds 0 0 BASH_REMATCH[1] BASH_REMATCH[2])
-    # M. Defaults if number is given without letter.
-    elif [[ "$parameter" =~ ^([0-9]+)$ ]]; then
+    elif [[ "$parameter" =~ $PAT_M ]]; then          # M
         sec_rem=$(print_seconds 0 0 BASH_REMATCH[1] 0)
-    # Verbal formats, seconds (if time unit starts with 's').
-    elif [[ "$parameter" =~ ^([0-9]+)s(.*) ]]; then
+    # Verbal formats
+    elif [[ "$parameter" =~ $PAT_S_VERBAL ]]; then   # <number>s[econds]
         sec_more=$(print_seconds 0 0 0 BASH_REMATCH[1])
     # Add to existing time so they can be combined.
         sec_rem=$(( sec_rem + sec_more))
-    # Minutes
-    elif [[ "$parameter" =~ ^([0-9]+)m(.*) ]]; then
+    elif [[ "$parameter" =~ $PAT_M_VERBAL ]]; then   # <number>m[inutes]
         sec_more=$(print_seconds 0 0 BASH_REMATCH[1] 0)
         sec_rem=$(( sec_rem + sec_more))
-    # Hours
-    elif [[ "$parameter" =~ ^([0-9]+)h(.*) ]]; then
+    elif [[ "$parameter" =~ $PAT_H_VERBAL ]]; then   # <number>h[ours]
         sec_more=$(print_seconds 0 BASH_REMATCH[1] 0 0)
         sec_rem=$(( sec_rem + sec_more))
     else
