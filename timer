@@ -59,6 +59,7 @@ Options:
   -h, --help    Display this help and exit.
   -b, --bar     Show a progress bar.
   -s, --silent  Do not show any output during countdown.
+  -t  --title   Show the title at the top of the screen.
   -v, --version Show version info."
 }
 
@@ -96,9 +97,8 @@ function correct_date_sec () {
     echo "0"
 }
 
-
 # Assign number of seconds by print_seconds based on timer format.
-function assign_time () {
+function parse_time () {
     if [[ "$parameter" =~ $PAT_HMS ]]; then          # H:M:S
         sec_rem=$(print_seconds 0 BASH_REMATCH[1] BASH_REMATCH[2] BASH_REMATCH[3])
     elif [[ "$parameter" =~ $PAT_MS ]]; then         # M:S
@@ -162,6 +162,7 @@ sec_rem=0      # remaining seconds
 previous_parameter=""
 while [[ $# -gt 0 ]]; do
     parameter=$1; shift
+
     if [[ "${parameter:0:1}" == "-" ]]; then
         case "$parameter" in
             -f | --force  ) NO_CONFIRM=true ;;
@@ -169,21 +170,25 @@ while [[ $# -gt 0 ]]; do
             -h | --help   ) show_hint && exit 0 ;;
             -s | --silent ) be_silent=true ;;
             -v | --version) echo "Terminal Timer version: " $VERSION && exit 0 ;;
-            *) echo "Error: Not a valid option: \"$parameter\". \
-Type $("basename" "$0") -h for available options." >&2
-            exit 1
+#             *) echo "Error: Not a valid option: \"$parameter\". \
+# Type $("basename" "$0") -h for available options." >&2
+#             exit 1
         esac
         previous_parameter="$parameter"
         continue
     fi
+
     if [[ "$parameter" == at ]]; then
       previous_parameter="$parameter"
       continue
     fi
+
     case "$previous_parameter" in
         at ) set_at_time ;;
-        *) assign_time ;;
+        -t | --title  ) TITLE="$parameter" ;; # set title
+        *) parse_time ;;
     esac
+
     previous_parameter=""
 done
 
@@ -271,8 +276,14 @@ function show_progress_bar () {
     # printf -v f "%$(echo $bar_length)s>"
     printf "%s\r" "${f// /=}"
 
+    if [[ -n "${TITLE:-}" ]]; then
+        row=$(( $1+6 ))
+    else
+        row=$(( $1+5 ))
+    fi
+
     # Cursor placement for end of progress bar.
-    tput cup $(( $1 + 5 )) $(( col + 2 ))
+    tput cup $row $(( col + 2 ))
 
     printf "]\n\n"
     if [[ $debug_mode == "true" ]]; then
@@ -345,19 +356,24 @@ while [[ $sec_rem -gt 0 ]]; do
     fi
     tput home # move cursor back to (0,0)
 
+    if [[ -n "${TITLE:-}" ]]; then # print the title if it exists
+        echo "$TITLE"
+    fi
+
     echo "Now:   $(date)"
     echo "Until: $TIMEOUT_DATE"
 
     printf "%0.s-" {1..35}; echo
 
+    # TODO: Make initial calculation to set which time units to show.
     # Check how many lines we need for output once.
     if [[ $lines == 0 ]]; then
         if [ $hours -gt 0 ]; then
-            readonly lines=3
+            lines=3
         elif [ $minutes -gt 0 ]; then
-            readonly lines=2
+            lines=2
         else
-            readonly lines=1
+            lines=1
         fi
     fi
 
@@ -370,7 +386,9 @@ while [[ $sec_rem -gt 0 ]]; do
     printf "%0.s " {1..33}
     echo
 
-    [[ $show_progress_bar == true ]] && show_progress_bar "$lines"
+    if [[ $show_progress_bar == true ]]; then
+        show_progress_bar $lines
+    fi
 
     echo "Press [q] to stop counting           "
 
