@@ -262,6 +262,7 @@ col=$(( col -5 ))
 # print a progress bar
 # usage: show_progress_bar <number of lines needed for time>
 function show_progress_bar () {
+    local line
     # Tämän pitäis mennä kuin sekunnit eteenpäin, mutta menee hieman nopeampaa ja
     # epäsynkkaan.
 
@@ -277,15 +278,16 @@ function show_progress_bar () {
     printf "%s\r" "${f// /=}"
 
     if [[ -n "${TITLE:-}" ]]; then
-        row=$(( $1+6 ))
+        local line=$(( $1+6 ))
     else
-        row=$(( $1+5 ))
+        local line=$(( $1+5 ))
     fi
 
+    # line=$(tput lines)
     # Cursor placement for end of progress bar.
-    tput cup $row $(( col + 2 ))
-
+    tput cup "$line" $(( col + 2 ))
     printf "]\n\n"
+
     if [[ $debug_mode == "true" ]]; then
         echo "Debug:                       "
         echo "Total time: " $total_time "  "
