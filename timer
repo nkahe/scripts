@@ -55,9 +55,10 @@ Examples:
   $("basename" "$0") at 22:15 Countdown until 22:15 o'clock (10:15 PM).
 
 Options:
+  -b, --bar     Show a progress bar.
   -f, --force   Force execute. This option must be located before 'at'.
   -h, --help    Display this help and exit.
-  -b, --bar     Show a progress bar.
+  -m, --message <text>  Show the message at the bottom of the screen.
   -s, --silent  Do not show any output during countdown.
   -t  --title   Show the title at the top of the screen.
   -v, --version Show version info."
@@ -185,7 +186,8 @@ while [[ $# -gt 0 ]]; do
 
     case "$previous_parameter" in
         at ) set_at_time ;;
-        -t | --title  ) TITLE="$parameter" ;; # set title
+        -m | --message ) MESSAGE="$parameter" ;; # set message
+        -t | --title   ) TITLE="$parameter"   ;; # set title
         *) parse_time ;;
     esac
 
@@ -256,11 +258,12 @@ function check_terminal () {
 
 
 # Defaults for progress bar
+# TODO: better name.
 col=$(tput cols)
-col=$(( col -5 ))
+col=$(( col -3 ))
 
 # print a progress bar
-# usage: show_progress_bar <number of lines needed for time>
+# usage: show_progress_bar <lines for time units>
 function show_progress_bar () {
     local line
     # Tämän pitäis mennä kuin sekunnit eteenpäin, mutta menee hieman nopeampaa ja
@@ -285,7 +288,7 @@ function show_progress_bar () {
 
     # line=$(tput lines)
     # Cursor placement for end of progress bar.
-    tput cup "$line" $(( col + 2 ))
+    tput cup "$line" "$col"
     printf "]\n\n"
 
     if [[ $debug_mode == "true" ]]; then
@@ -393,6 +396,10 @@ while [[ $sec_rem -gt 0 ]]; do
     fi
 
     echo "Press [q] to stop counting           "
+
+    if [[ -n "${MESSAGE:-}" ]]; then # print the message
+        echo -e "\n$MESSAGE"
+    fi
 
     # Wait a second and quit if user press 'q' else continue.
     read -n 1 -t 1 ch || true
