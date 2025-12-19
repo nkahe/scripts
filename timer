@@ -56,6 +56,7 @@ Examples:
 
 Options:
   -b, --bar     Show a progress bar.
+  -e <command>  Execute command on timeup. The command will not be executed on cancel.
   -f, --force   Force execute. This option must be located before 'at'.
   -h, --help    Display this help and exit.
   -m, --message <text>  Show the message at the bottom of the screen.
@@ -162,7 +163,8 @@ function set_at_time() {
 sec_rem=0      # remaining seconds
 previous_parameter=""
 while [[ $# -gt 0 ]]; do
-    parameter=$1; shift
+    parameter=$1
+    shift
 
     if [[ "${parameter:0:1}" == "-" ]]; then
         case "$parameter" in
@@ -171,9 +173,6 @@ while [[ $# -gt 0 ]]; do
             -h | --help   ) show_hint && exit 0 ;;
             -s | --silent ) be_silent=true ;;
             -v | --version) echo "Terminal Timer version: " $VERSION && exit 0 ;;
-#             *) echo "Error: Not a valid option: \"$parameter\". \
-# Type $("basename" "$0") -h for available options." >&2
-#             exit 1
         esac
         previous_parameter="$parameter"
         continue
@@ -186,6 +185,7 @@ while [[ $# -gt 0 ]]; do
 
     case "$previous_parameter" in
         at ) set_at_time ;;
+        -e ) EXECUTE="$parameter"             ;; # execute command on timeup
         -m | --message ) MESSAGE="$parameter" ;; # set message
         -t | --title   ) TITLE="$parameter"   ;; # set title
         *) parse_time ;;
@@ -217,6 +217,11 @@ function cleanup_and_exit () {
         clear
     elif [[ -n "${2:-}" ]]; then
         echo -e "\n$2"
+    fi
+
+
+    if [[ $1 -eq 0 ]] && [[ -n "${EXECUTE:-}" ]]; then # execute command on timeup
+        eval $EXECUTE
     fi
 
     exit "$1"
@@ -281,9 +286,9 @@ function show_progress_bar () {
     printf "%s\r" "${f// /=}"
 
     if [[ -n "${TITLE:-}" ]]; then
-        local line=$(( $1+6 ))
+        local line=$(( $1+7 ))
     else
-        local line=$(( $1+5 ))
+        local line=$(( $1+6 ))
     fi
 
     # line=$(tput lines)
@@ -359,7 +364,6 @@ while [[ $sec_rem -gt 0 ]]; do
         fi
         print_title $tab_title
     fi
-    tput home # move cursor back to (0,0)
 
     if [[ -n "${TITLE:-}" ]]; then # print the title if it exists
         echo "$TITLE"
@@ -401,7 +405,9 @@ while [[ $sec_rem -gt 0 ]]; do
         echo -e "\n$MESSAGE"
     fi
 
-    # Wait a second and quit if user press 'q' else continue.
+    tput home # move cursor back to (0,0)
+
+    # Wait a second and monitor user input
     read -n 1 -t 1 ch || true
     [[ "$ch" == "q" ]] && cleanup_and_exit 1 "$interrupt_message"
 done
