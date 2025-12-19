@@ -1,0 +1,9 @@
+#!/bin/sh
+jq -r '
+  def wrap(s):
+    [s | scan(".{1,75}")] | join("\n    ");
+  [.addons[] | {name: (.defaultLocale.name // .name // "unknown"), active}] as $a |
+  ($a | map(select(.active)) | sort_by(.name)[] | "active: " + wrap(.name)),
+  "",
+  ($a | map(select(.active|not)) | sort_by(.name)[] | "disabled: " + wrap(.name))
+' ~/.librewolf/*.default*/extensions.json
