@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DEFAULT_N=100
+N="$DEFAULT_N"
+REVERSE=0
+
+show_help() {
+  cat <<EOF
+Usage: $("basename" "$0") [OPTIONS]
+
+List installed RPM packages by size.
+
+Options:
+  -n <number>       Number of packages to show (used for tail).
+                    Default: ${DEFAULT_N}
+  -r, --reverse     Reverse the final output order.
+  -h, --help        Show this help and exit
+
+Examples:
+  ptop
+  ptop -n 20
+  ptop -n 50 --reverse
+EOF
+}
+
+# argument parsing
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -n)
+      if [[ -z "${2:-}" || "$2" =~ ^- ]]; then
+        echo "Error: -n requires a numeric argument." >&2
+        show_help
+        exit 1
+      fi
+      N="$2"
+      shift 2
+      ;;
+    -r|--reverse)
+      REVERSE=1
+      shift
+      ;;
+    -h|--help)
+      show_help
+      exit 0
+      ;;
+    *)
+      echo "Error: Unknown option: $1" >&2
+      show_help
+      exit 1
+      ;;
+  esac
+done
+
+cmd=(
+  rpm -qa --queryformat="%{SIZE} %{NAME} %{VERSION}\n"
+)
+
+# build pipeline explicitly for clarity
+pipeline() {
+  "${cmd[@]}" \
+    | sort --key=1 --numeric-sort \
+    | tail --lines="$N" \
+    | awk '{size=$1; $1=""; print size, $0}' \
+    | numfmt --field=1 --to=iec --suffix=B
+}
+
+if [[ "$REVERSE" -eq 1 ]]; then
+  pipeline
+else
+  pipeline | tac
+fi
