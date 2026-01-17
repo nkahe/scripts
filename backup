@@ -99,7 +99,7 @@ function backup_to_external() {
       --exclude-from "$BORG_CONFIG_DIR/exclude-hdd" \
       "$repo::ryzen-user_{now:%d-%m-%Y_%R}" \
       "$HOME" \
-      "$HOME/Games/frogcomposband/lib/save"
+      "$HOME/Games/frogcomposband/lib/save" \
       /etc
   backup_exit=$?
   prune "$repo"
