@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Configuration
+VM_NAME="win10"  # Replace with your VM name
+BACKUP_DIR="/path/to/backups"  # Replace with your backup directory
+DATE=$(date +%Y-%m-%d_%H-%M-%S)
+
+# Check if VM is running
+if virsh list --all | grep -q "$VM_NAME.*running"; then
+    echo "VM $VM_NAME is running. Skipping disk and config backup."
+else
+    # Create backup directory
+    mkdir -p "$BACKUP_DIR/$VM_NAME/$DATE"
+
+    # Backup disk(s)
+    # Replace /var/lib/libvirt/images/win10.qcow2 with your actual disk path
+    cp /var/lib/libvirt/images/"$VM_NAME".qcow2 "$BACKUP_DIR/$VM_NAME/$DATE/"
+
+    # Backup configuration
+    virsh dumpxml "$VM_NAME" > "$BACKUP_DIR/$VM_NAME/$DATE/$VM_NAME.xml"
+
+    echo "Backup completed for $VM_NAME at $DATE"
+fi
