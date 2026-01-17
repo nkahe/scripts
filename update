@@ -1,0 +1,40 @@
+#!/bin/zsh
+
+# Update various software.
+
+function has() {
+  command -v "$@" &> /dev/null
+}
+
+sudo dnf upgrade
+
+# Flatpaks
+if has flatpak; then
+  echo -e "Updating flatpaks...\n"
+  if flatpak info org.signal.Signal >/dev/null 2>&1; then
+    flatpak update org.signal.Signal
+  fi
+fi
+
+# Appimages
+
+# appimage_update="$HOME/Applications/appimageupdatetool-x86_64.AppImage"
+# neovide_appimage="$HOME/Applications/neovide.AppImage"
+#
+# if [ -x "$appimage_update" ] && [ -f "$neovide_appimage" ]; then
+#     echo -e "Updating appimages...\n"
+#     "$appimage_update" --remove-old "$neovide_appimage"
+# fi
+
+
+## Zsh framework
+
+ZINIT_HOME=${ZINIT_HOME:-$HOME/.local/share/zinit}
+
+if [[ -f $ZINIT_HOME/bin/zinit.zsh ]]; then
+  echo -e "Updating Zinit...\n"
+  source "$ZINIT_HOME/bin/zinit.zsh"
+  zinit self-update
+  zinit update --all
+fi
+
