@@ -27,14 +27,24 @@ fi
 # fi
 
 
-## Zsh framework
+antidotefile="${XDG_DATA_HOME:-${HOME}/.local/share}/antidote/antidote.zsh"
 
-ZINIT_HOME=${ZINIT_HOME:-$HOME/.local/share/zinit}
-
-if [[ -f $ZINIT_HOME/bin/zinit.zsh ]]; then
-  echo -e "Updating Zinit...\n"
-  source "$ZINIT_HOME/bin/zinit.zsh"
-  zinit self-update
-  zinit update --all
+if [[ -f $antidotefile ]]; then
+  zstyle ':antidote:bundle' use-friendly-names 'yes'
+  source $antidotefile
+  # initialize plugins statically with ${ZDOTDIR:-~}/.zsh_plugins.txt
+  antidote load ${ZDOTDIR:-~}/zsh_plugins.txt
+  antidote update
 fi
 
+## Zsh framework
+
+# ZINIT_HOME=${ZINIT_HOME:-$HOME/.local/share/zinit}
+#
+# if [[ -f $ZINIT_HOME/bin/zinit.zsh ]]; then
+#   echo -e "Updating Zinit...\n"
+#   source "$ZINIT_HOME/bin/zinit.zsh"
+#   zinit self-update
+#   zinit update --all
+# fi
+#
