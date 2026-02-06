@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Updates Neovim nightly Linux version from Git tarball.
+
+# ---- configuration ---------------------------------------------------------
+NVIM_URL="https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.tar.gz"
+INSTALL_DIR="/opt"
+NVIM_DIR="${INSTALL_DIR}/nvim-linux-x86_64"
+TMPDIR="$(mktemp -d)"
+ARCHIVE="${TMPDIR}/nvim-linux-x86_64.tar.gz"
+# ---------------------------------------------------------------------------
+
+cleanup() {
+  rm -rf "${TMPDIR}"
+}
+trap cleanup EXIT
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || {
+    echo "Error: required command '$1' not found" >&2
+    exit 1
+  }
+}
+
+# sanity checks
+require_cmd curl
+require_cmd tar
+require_cmd sudo
+
+# download
+echo "Downloading Neovim tarball…"
+curl --fail --location --silent --show-error \
+  --output "${ARCHIVE}" \
+  "${NVIM_URL}"
+
+# extract atomically
+echo "Installing to ${NVIM_DIR}…"
+sudo rm -rf "${NVIM_DIR}"
+sudo tar -C "${INSTALL_DIR}" -xzf "${ARCHIVE}"
+
+# optional hint for PATH
+if ! command -v nvim >/dev/null 2>&1; then
+  cat <<EOF
+
+Neovim installed, but 'nvim' is not in PATH.
+Add this to your shell config:
+
+  export PATH="${NVIM_DIR}/bin:\$PATH"
+
+EOF
+else
+  echo "Neovim installation complete."
+  nvim --version | head -n 1
+fi
