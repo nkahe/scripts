@@ -1,0 +1,39 @@
+#!/bin/bash
+
+define() {
+  if [[ $# -ne 1 ]]; then
+    echo "usage: define <word>" >&2
+    return 1
+  fi
+
+  curl -sS "dict://dict.org/d:$1" | awk -v query="$1" '
+    # Normalize CRLF
+    { sub(/\r$/, "") }
+    # Friendly errors from server status lines
+    $1 == 552 {
+      print "define: no match for \"" query "\"" > "/dev/stderr"
+      exit 1
+    }
+    $1 ~ /^5[0-9][0-9]$/ {
+      print "define: server error (" $1 ")" > "/dev/stderr"
+      exit 1
+    }
+    $1 ~ /^4[0-9][0-9]$/ {
+      print "define: request error (" $1 ")" > "/dev/stderr"
+      exit 1
+    }
+
+    # Start of definition payload
+    $1 == 151 { in_def = 1; next }
+
+    # Print only definition body until "." terminator
+    in_def {
+      if ($0 == ".") exit 0
+      print
+    }
+  ' | $PAGER
+}
+
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  define "$@"
+fi
