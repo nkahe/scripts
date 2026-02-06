@@ -1,0 +1,18 @@
+#!/bin/zsh
+
+# This updates Zsh plugins with Antidote from a script.
+
+antidotefile="${XDG_DATA_HOME:-${HOME}/.local/share}/antidote/antidote.zsh"
+
+if [[ -f $antidotefile ]]; then
+
+  zstyle ':antidote:bundle' use-friendly-names 'yes'
+
+  # source antidote
+  source $antidotefile
+
+  # initialize plugins statically with ${ZDOTDIR:-~}/.zsh_plugins.txt
+  antidote load ${ZDOTDIR:-~}/zsh_plugins.txt
+  antidote update
+
+fi
