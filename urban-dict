@@ -53,4 +53,4 @@ topDefinition=$(printf "\n%s%s%s\n" \
 "<div>Examples</div>${example}")
 
 printf "\n"
-echo ${topDefinition} | lynx -dump -stdin
+echo ${topDefinition} | lynx -dump -nolist -stdin
