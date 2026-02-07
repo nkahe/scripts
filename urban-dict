@@ -33,11 +33,17 @@ content=$(wget -O - -q "https://www.urbandictionary.com/define.php?term=$1" |
 
 meaning=$(echo "${content}" | hxselect -i "div.meaning")
 example=$(echo "${content}" | hxselect -i "div.example")
+
+if [[ -z "${meaning}" ]]; then
+    print_error "no definition found for: $1"
+    exit 1
+fi
+
 topDefinition=$(printf "\n%s%s%s\n" \
-"<hr /><div>searching for: $1</div>" \
+"<div>searching for: $1</div>" \
 "<div>Meaning</div>${meaning}" \
-"<div>Examples</div>${example}<hr />")
+"<div>Examples</div>${example}")
 
 printf "\n"
 echo ${topDefinition} | lynx -dump -stdin
-printf "\n"
+# printf "\n"
