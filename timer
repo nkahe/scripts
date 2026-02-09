@@ -173,6 +173,10 @@ while [[ $# -gt 0 ]]; do
             -h | --help   ) show_hint && exit 0 ;;
             -s | --silent ) be_silent=true ;;
             -v | --version) echo "Terminal Timer version: " $VERSION && exit 0 ;;
+            * )
+                echo "Error: Not a valid option: \"$parameter\". Type \"$(basename "$0") -h\" for available options." >&2
+                exit 1
+                ;;
         esac
         previous_parameter="$parameter"
         continue
