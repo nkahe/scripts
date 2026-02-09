@@ -56,12 +56,15 @@ Examples:
 
 Options:
   -b, --bar     Show a progress bar.
-  -e <command>  Execute command on timeup.
+  -e <command> [args...] [--]  Execute command on timeup. The command and its 
+               arguments are collected until end-of-args or "--".
   -f, --force   Force execute. This option must be located before 'at'.
   -h, --help    Display this help and exit.
-  -m, --message <text>  Show the message at the bottom of the screen.
+  -m, --message <text>  Show the message at the bottom of the screen. Use quotations
+                        with several words.
   -s, --silent  Do not show any output during countdown.
-  -t  --title   Show the title at the top of the screen.
+  -t  --title   Show the title at the top of the screen. Use quotations with
+                several words.
   -v, --version Show version info."
 }
 
@@ -163,16 +166,31 @@ function set_at_time() {
 # Parse command line options
 sec_rem=0      # remaining seconds
 previous_parameter=""
+EXECUTE_COLLECT=false
+EXECUTE_CMD=()
 while [[ $# -gt 0 ]]; do
     parameter=$1
     shift
+
+    if [[ $EXECUTE_COLLECT == true ]]; then
+        if [[ "$parameter" == "--" ]]; then
+            EXECUTE_COLLECT=false
+            previous_parameter=""
+            continue
+        fi
+        EXECUTE_CMD+=("$parameter")
+        continue
+    fi
 
     if [[ "${parameter:0:1}" == "-" ]]; then
         case "$parameter" in
             -f | --force  ) NO_CONFIRM=true ;;
             -b | --bar    ) show_progress_bar=true ;;
+            -e            ) EXECUTE_COLLECT=true; EXECUTE_CMD=() ;;
             -h | --help   ) show_hint && exit 0 ;;
+            -m | --message) previous_parameter="$parameter"; continue ;;
             -s | --silent ) be_silent=true ;;
+            -t | --title  ) previous_parameter="$parameter"; continue ;;
             -v | --version) echo "Terminal Timer version: " $VERSION && exit 0 ;;
             * )
                 echo "Error: Not a valid option: \"$parameter\". Type \"$(basename "$0") -h\" for available options." >&2
@@ -190,7 +208,6 @@ while [[ $# -gt 0 ]]; do
 
     case "$previous_parameter" in
         at ) set_at_time ;;
-        -e ) EXECUTE="$parameter"             ;; # execute command on timeup
         -m | --message ) MESSAGE="$parameter" ;; # set message
         -t | --title   ) TITLE="$parameter"   ;; # set title
         *) parse_time ;;
@@ -224,9 +241,9 @@ function cleanup_and_exit () {
         echo -e "\n$2"
     fi
 
-
-    if [[ $1 -eq 0 ]] && [[ -n "${EXECUTE:-}" ]]; then # execute command on timeup
-        eval $EXECUTE
+    # execute command on timeup
+    if [[ $1 -eq 0 ]] && [[ ${#EXECUTE_CMD[@]} -gt 0 ]]; then
+        "${EXECUTE_CMD[@]}"
     fi
 
     exit "$1"
