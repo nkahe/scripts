@@ -56,7 +56,7 @@ Examples:
 
 Options:
   -b, --bar     Show a progress bar.
-  -e <command>  Execute command on timeup. The command will not be executed on cancel.
+  -e <command>  Execute command on timeup.
   -f, --force   Force execute. This option must be located before 'at'.
   -h, --help    Display this help and exit.
   -m, --message <text>  Show the message at the bottom of the screen.
@@ -79,14 +79,14 @@ function print_seconds () {
         exit 1
     fi
     # hours, minutes, seconds
-    result=$(( $2 * 3600 + $3 * 60 + $4 ))
+    local result=$(( $2 * 3600 + $3 * 60 + $4 ))
     echo "$result"
 }
 
 # Correct date by trying to add some time to it.
 # usage: correct_date_sec seconds
 function correct_date_sec () {
-    final=$1
+    local final=$1
     if [[ "$final" -gt 0 ]]; then
         echo "$final"
         return
@@ -101,6 +101,7 @@ function correct_date_sec () {
 
 # Assign number of seconds by print_seconds based on timer format.
 function parse_time () {
+    local sec_more
     if [[ "$parameter" =~ $PAT_HMS ]]; then          # H:M:S
         sec_rem=$(print_seconds 0 BASH_REMATCH[1] BASH_REMATCH[2] BASH_REMATCH[3])
     elif [[ "$parameter" =~ $PAT_MS ]]; then         # M:S
@@ -148,7 +149,7 @@ function set_at_time() {
         if [[ -z "$NO_CONFIRM" ]]; then
             # confirm for the correction
             echo "Warning: The given date is assumed to be: $(date -d now\ +"$sec_rem"\ sec)"
-            echo "Place an option -f before -d to suppress this warning"
+            echo "Place an option -f before 'at' to suppress this warning"
             read -r -n 1 -p "Still proceed [Y]/n?" ch
             echo
             if [[ "$ch" == "n" || "$ch" == "N" ]]; then
@@ -279,7 +280,7 @@ function show_progress_bar () {
     # epäsynkkaan.
 
     # Progress bar character length
-    bar_length=$(( col * progress_percent / 100 ))
+    local bar_length=$(( col * progress_percent / 100 ))
     # sec_done=$[$total_time - $sec_rem]
     printf "["
 
