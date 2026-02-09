@@ -309,9 +309,9 @@ function show_progress_bar () {
 function silent_countdown() {
     while [[ $sec_rem -gt 0 ]]; do
         # calculate remaining seconds
-        sec_rem=$(( until_date - TIME_NOW ))
+        sec_rem=$(( until_date - $(date +%s) ))
         progress_percent=$(( (total_time - sec_rem) * 100 / total_time ))
-        read -r -n 1 -t 1 ch
+        read -r -n 1 -t 1 ch || true
         if [[ "$ch" == q ]]; then
             cleanup_and_exit 1 "$interrupt_message"
         fi
