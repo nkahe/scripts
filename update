@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+set -e
+
 # Update various software.
 
 function has() {
@@ -35,6 +37,11 @@ if [[ -f $antidotefile ]]; then
   # initialize plugins statically with ${ZDOTDIR:-~}/.zsh_plugins.txt
   antidote load ${ZDOTDIR:-~}/zsh_plugins.txt
   antidote update
+fi
+
+if has ubi; then
+  echo "Updating moor with ubi to /usr/local/bin .."
+  sudo ubi --project walles/moor --in "/usr/local/bin"
 fi
 
 ## Zsh framework

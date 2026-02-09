@@ -149,7 +149,7 @@ function set_at_time() {
             # confirm for the correction
             echo "Warning: The given date is assumed to be: $(date -d now\ +"$sec_rem"\ sec)"
             echo "Place an option -f before -d to suppress this warning"
-            read -n 1 -p -r "Still proceed [Y]/n?" ch
+            read -r -n 1 -p "Still proceed [Y]/n?" ch
             echo
             if [[ "$ch" == "n" || "$ch" == "N" ]]; then
                 exit 1
