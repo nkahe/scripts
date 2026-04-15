@@ -40,8 +40,9 @@ if [[ -f $antidotefile ]]; then
 fi
 
 if has ubi; then
-  echo "Updating moor with ubi to /usr/local/bin .."
+  echo "Updating moor and ripgrep with ubi to /usr/local/bin .."
   sudo ubi --project walles/moor --in "/usr/local/bin"
+  sudo ubi --project BurntSushi/ripgrep --in "/usr/local/bin" -e rg
 fi
 
 ## Zsh framework
