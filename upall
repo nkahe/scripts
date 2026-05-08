@@ -1,8 +1,8 @@
 #!/bin/zsh
 
-set -e
-
 # Update various software.
+
+set -e
 
 function has() {
   command -v "$@" &> /dev/null
@@ -28,10 +28,9 @@ fi
 #     "$appimage_update" --remove-old "$neovide_appimage"
 # fi
 
-
 # Antidote is a Zsh plugin manager.  https://antidote.sh/
 antidotefile="${XDG_DATA_HOME:-${HOME}/.local/share}/antidote/antidote.zsh"
-if [[ -f $antidotefile ]]; then
+if [ -f $antidotefile ]; then
   zstyle ':antidote:bundle' use-friendly-names 'yes'
   source $antidotefile
   # initialize plugins statically with ${ZDOTDIR:-~}/.zsh_plugins.txt
@@ -45,11 +44,17 @@ if has ubi; then
   echo "Updating moor and ripgrep with ubi to /usr/local/bin .."
   sudo ubi --project walles/moor --in "/usr/local/bin"
   sudo ubi --project BurntSushi/ripgrep --in "/usr/local/bin" -e rg
+  ubi --project michel-kraemer/zsh-patina --in ~/local/bin
 fi
 
 # bob: A version manager for neovim. https://github.com/MordechaiHadad/bob
 if has bob; then
   bob update
+fi
+
+file=$HOME/scripts/install-kitty.sh
+if [ -f $file ]; then
+  . "$file"
 fi
 
 ## Zsh framework
