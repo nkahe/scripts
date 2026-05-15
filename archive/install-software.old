@@ -1,0 +1,169 @@
+#!/bin/bash
+
+# LEAP_VERSION="Leap_42.2"
+
+####### HUOM! muuta, että vaihtaa muuttujan lowercaseksi! ###############
+
+# TODO: vois laittaa, että tekee .zshenv:in
+
+#!/bin/sh
+#if [ $UID != 0 ] ; then
+#  echo "Error: must run as root."
+#  exit 1
+#fi
+
+echo -e "\n----- Post-installation script ------\n"
+sleep 1
+
+if lsb_release -d | grep -q 'Tumbleweed'; then
+  echo -e "\nopenSUSE Tumbleweed recognized.\n"
+  distro=Tumbleweed
+elif lsb_release -d | grep -q 'Leap'; then
+  echo -e "\nopenSUSE Leap recognized. Please enter version (e.g. 15.0):"
+  read version
+  distro=Leap_$version
+else
+  echo "Error: not supported distro. Supported: openSUSE Tumbleweed & Leap."
+  exit 1
+fi
+
+echo -e "\nRecognized desktop environment: " $XDG_SESSION_DESKTOP "\n"
+sleep 2
+
+echo -e "\nDesktop environment to install: 1) Enlightenment, 2) MATE, OTHER) None\n"
+read vastaus
+if [[ $vastaus = 1 ]]; then
+  de="e"
+elif [[ $vastaus = 2 ]]; then
+  de="mate"
+fi
+
+echo -e "Add Packman repo (y/n)?"
+read vastaus
+if [[ $vastaus = y ]]; then
+  sleep 1
+  su -c "zypper addrepo --check --refresh --priority 110 --name Packman http://packman.inode.at/suse/openSUSE_$distro packman"
+fi
+
+# mm. EasyStroke:a varten
+# TODO: tsekkaus, onko TW vai LEAP!
+echo -e "Install X11-repository (Easystroke) (y/n)?"
+read answer
+
+if [[ $answer = y ]]; then
+  if [[ $distro = Tumbleweed ]]; then
+    # X11 repo uses name 'Factory' for Tumbleweed.
+    pattern=Factory
+  else
+    pattern=$distro
+  fi
+  su -c "zypper addrepo --check --refresh --priority 110 --name "X11:Utilities" http://download.opensuse.org/repositories/X11:/Utilities/openSUSE_$pattern"
+fi
+
+echo -e "\n------ Beginning to install software ------"
+sleep 1
+
+# Enlightenmentille
+if [[ $de = "e" ]]; then
+  su -c "zypper install enlightenment claws-mail clipit lightdm libappindicator{1,3-1}
+  networkmanager-gnome redshift redshift-gtk trayer-srg"
+fi
+
+# riippuvuuksia: alsa-plugings...: Skype, python-pycrypto
+# Kuvauksia: xautomation, xdotool & xvkbd = Xbindkeys tarvitsee hiiren nappia
+# ja shortcutteja varten, xclip = X-leikepöytä terminaalissa.
+
+# opi: installing from openSUSE's OBS.
+# python3-pip- mm. Cheatin asennukseen. grc: generic colorizer.
+# sensors: conky, inxi. Mesa-demo-x : inxiä varten.
+# icze = värittää logit
+
+echo -e "\n Installing CLI-tools"
+
+# Vain susella
+su -c "zypper install fd opi taskwarrior"
+
+su -c "zypper install bat borgbackup bc ccze colordiff conky cronie-anacron earlyoom exa ffmpegthumbs fzf git-core htop inxi Mesa-demo-x mlocate most ncdu neovim python3-pip translate-shell xbindkeys grc 
+xclip xautomation xdotool xvkbd xkill xdpyinfo"
+
+# fedoralla: sudo dnf in fd-find ShellCheck task
+
+echo -e "\n Installing GUI-applications"
+su -c "zypper install cherrytree easystroke gparted keepassxc kitty MozillaFirefox{,-translations-common}"
+
+su -c "dnf install libreoffice-voikko"
+
+# Sisältyvät X-window asennukseen: MozillaFirefox mutt susepaste
+
+if [[ $de = "mate" ]]; then
+ su -c "zypper install +clipit -gnome-themes-accessibility"
+fi
+
+# gcolor2 = color picker
+if [[ $XDG_SESSION_DESKTOP = "xfce" ]]; then
+  su -c "zypper install gtk2-engine-clearlooks libgnomesu menulibre xfce4-{screenshooter,taskmanager,panel-plugin-{whiskermenu,mixer},power-manager-branding-openSUSE} redshift gcolor2"
+
+  # Compiz
+  # su -c "zypper install compiz compiz-plugins compizconfig-settings-manager metacity dconf-editor"
+fi
+
+if [[ $XDG_SESSION_DESKTOP = "gnome" ]]; then
+  # chrome-gnome-shell = extensioneiden asennus nettiselaimella (myös firefoxilla).
+  su -c "zypper install alsa-plugins-pulse chrome-gnome-shell donf-editor evince file-roller gnome-{control-center-user-faces,system-monitor,terminal,tweak-tool} libgnomesu pulseaudio-module-{gconf,x11,zeroconf} pulseaudio-utils"
+fi
+
+#jos ei clearlooksia asennettu, niin useat ohjelmat printtaa Xsession-errorsiin varoituksia sen puuttumisesta.
+
+# rfkill: ottaa wlanin pois käytöstä.
+# libnotify-tools
+
+# Koodekit. Pitää olla Packman valmiina.
+su -c "zypper install gstreamer gstreamer-plugins-{base,good,bad,ugly,libav} libx264-152"
+
+su -c "dnf install gstreamer1-plugins-good-extras lame* --exclude=lame-devel"
+
+echo -e "\n------ Removing unnecessary applications... ------"
+sleep 1
+
+# hplip-hpijs = Ajurit HP-printtereille.
+# Vim pois, koska asennettu Neovim.
+# Jos otttaa yast2-proxyn pois, niin sitten ottaa myös -users ja -sudo .
+su -c "zypper rm yast2-{add-on,apprmor,iscsi-client,nis-client,mail,nfs-client,nfs-common,inetd,online-update,samba-client,samba-server,vm,vpn} stix-fonts hplip-hpijs vim vim-data"
+
+# Fedoralla:
+su -c "dnf remove anthy brltty libcangjie
+
+su -c "zypper addlock efont-unicode-bitmap-fonts"
+
+#KDE:llä ################
+
+if [[ $XDG_SESSION_DESKTOP = KDE ]]; then
+ echo -e "\n------ Asennetaan paketit KDE:lle ------"
+ # pyalsaaudio: Alsa Volume Control. pam-kwallet: allows you to automatically open your kwallet  when signing into your account. https://wiki.archlinux.org/index.php/KDE_Wallet
+ su -c "zypper install kdegraphics-thumbnailers pam-kwallet pyalsaaudio"
+
+ echo -e '\n------ Removing unnecessary KDE-packages. ------'
+ sleep 1
+ # Kuvauksia: kmag kmousetool : Esteettömyysjuttuja. libreoffice-kde4 > libreoffice-gnome, KRDC: työpöydän etäkäyttö, KRFB: työpöydän etäkäyttö - jako, Hugin: panoraamakuvien teko, kvkbd & xkvbd: kde ja X virtuaalinäppis. libfprint0 : Finger print
+# yast2-qt-branding-openSUSE = tummalla teemalla ei saa selvää, jos on tämä asennettu.
+#  su -c "zypper rm amarok choqok kmag kmousetool kcharselect krdc krfb kvkbd sweeper xscreensaver-data-extra libfprint0 plasma5-addons{,-kimpanel} yast2-qt-branding-openSUSE"
+# jos en tartte gui-ircciä, niin myös konversation
+
+# Viimeisimmässä asennuksessa ei näitä yritetty asentaa.
+# Lukotetaan vähän käytetyt ohjelmat, jotka säilytetään, mutta joita ei tarvitse päivittää.
+# That Yast branding doesn't work with dark themes.
+su -c "zypper addlock k3b yast2-qt-branding-openSUSE"
+fi
+##########################
+
+# Jos koko Libreoffice on asennettu
+su -c "zypper rm libreoffice-{calc-extensions,mailmerge,math,filters-optional,templates-en,templates-labels-letter,icon-theme-hicontrast}"
+
+# saattaa tarvita: ruby-devel ruby2.2-devel
+
+# Jos ei tarvitse tulostaa
+# su -c "zypper rm system-config-printer{,-common}"
+
+echo -e "\nValmis.\n"
+
+exit $?

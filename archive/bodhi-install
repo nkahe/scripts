@@ -1,0 +1,113 @@
+#!/bin/sh
+
+echo ''
+echo '----- Ohjelmien asennus Bodhille ------'
+sleep 1
+
+echo "Valitse kone: (p)öytäkone, (L)äppäri"
+read kone
+echo -en '\n'
+
+
+echo '------ Asennetaan ohjelmia ------'
+sleep 1
+
+apt-get install in cherrytree claws-mail clipit conky flashplugin-installer dropbox firefox firefox-locale-fi geany htop libreoffice 5.0 libreoffice5.0-fi libreoffice-help-fi libreoffice-voikko libreoffice-gtk lxtask zsh 
+
+# Asenna OBS:stä: clipit medit menulibre easystroke inxi moka rtmpdump (yle-dl)
+
+# Riippuvuuksia: Alsa-plugings...: Skype, python-pycrypto, ruby: fzf
+# Kuvauksia:  freshplayerplugin: voi käyttää uutta flashplayer -versiota FF:ssä, xdotool & xvkbd > Hiiren napit ja shortcutit, xclip : X-leikepöytä terminaalissa.
+
+zypper in fetchmsttfonts freshplayerplugin htop  libappindicator1 libappindicator3-1 ncdu sshfs stalonetray translate-shell xbindkeys xclip xdotool xkill xvkbd
+
+# Uusimmassa asennuksessa tuli jo mukana: findutils-locate
+# Harvemmin käytettyjä (ei tartte välttämättä heti asentaa): Backintime, Bleachbit, Clementine, gparted, Imagewriter, mutt, pastebinit, python-pycrypto, python-pip (python-ohjelmien asennus pip-käskyllä), Skanlite, Skype.
+# Meditistä ei tätä kirjoittaessa ollut kuin 13.2 paketti OBS:ssä.
+
+echo -en '\n'
+echo "Asennetaanko Smplayer (k/e)?" 
+read vastaus
+ if [ $vastaus = "k" ]; then
+ zypper in smplayer
+fi
+
+# Ei aktiivisesti käytössä
+# zypper in gtk3-theme-oxygen dropbox-servicemenu transmission transmission-daemon
+
+# rfkill: ottaa wlanin pois käytöstä.
+
+#plasmoid-eYaSDP libnotify-tools kdeconnect-kde
+
+# Asenna Python -ohjelmia
+# echo 'Asennetaan python -ohjelmia...' 
+# pip install mps-youtube
+# pip install git+https://github.com/insanum/gcalcli.git
+
+# Allaolevan tarttee vain, jos jostain syystä ei kielipaketit asennu. Kun asentaa suositellut ohjelmat, niin pitäis kyllä asentua.
+# -l = Hyväksy lisenssit.
+# sudo zypper in smplayer smplayer-lang vlc-codecs
+
+echo 'Asennetaan koodekit'
+
+zypper in gstreamer-plugins-bad gstreamer-plugins-ugly
+
+# lisää koodekkeja.
+# libxine2-codecs ffmpeg lame gstreamer-0_10-plugins-good gstreamer-0_10-plugins-bad gstreamer-0_10-plugins-ugly gstreamer-0_10-plugins-bad-orig-addon gstreamer-0_10-plugins-good-extra gstreamer-0_10-plugins-ugly-orig-addon gstreamer-0_10-plugins-ffmpeg flash-player gstreamer-plugins-base gstreamer-plugins-bad gstreamer-plugins-bad-orig-addon gstreamer-plugins-good gstreamer-plugins-ugly gstreamer-plugins-ugly-orig-addon gstreamer-plugins-good-extra gstreamer-0_10-plugins-fluendo_mpegdemux gstreamer-0_10-plugins-fluendo_mpegmux h264enc x264
+
+
+echo 'Poistetaan turhat ohjelmat'
+sleep 1
+
+# Yast
+zypper rm yast2-add-on yast2-apparmor yast2-iscsi-client yast2-nis-client yast2-mail yast2-inetd yast2-online-update yast2-proxy yast2-samba-client yast2-samba-server yast2-vm
+
+if [ $DE = "kde" ]; then
+ echo -en '\n'
+ echo '------ Asennetaan paketteja KDE:lle ------'
+ sleep 1
+ # pyalsaaudio: Alsa Volume Control, appindicatorien pitäisi auttaa, että gtk -ohjelmien ikonit näkyisi systrayssa.
+ zypper in pyalsaaudio yakuake
+ 
+ echo '------ Poistetaan turhat KDE:n paketit ------'
+ sleep 1
+ # Kuvauksia: kcharselect kmag kmousetool : Esteettömyysjuttuja. Korvaavuuksia: grsync > LuckyBackup, libreoffice-kde4 > libreoffice-gnome, KRDC: työpöydän etäkäyttö, KRFB: työpöydän etäkäyttö - jako, Hugin: panoraamakuvien teko, kvkbd & xkvbd: kde ja X virtuaalinäppis. libfprint0 : Finger print
+ zypper rm amarok choqok kmag kmousetool rmkcharselect kdeartwork4-wallpapers krdc krfb kscd kvkbd sweeper xscreensaver-data-extra libfprint0
+# jos en tartte gui-ircciä, niin myös konversation
+ 
+# Viimeisimmässä asennuksessa ei näitä yritetty asentaa.
+# zypper rm grsync kipi-plugins  klibkdegames6 kruler libtelepathy-qt4-2 mkvtoolnix hugin
+ # Lukotetaan vähän käytetyt ohjelmat, jotka säilytetään, mutta joita ei tarvitse päivittää.
+ zypper addlock 'k3b'
+fi
+
+# Jos koko Libreoffice on asennettu
+# zypper rm libreoffice-calc-extensions libreoffice-mailmerge libreoffice-math libreoffice-filters-optional libreoffice-templates-en libreoffice-templates-labels-letter libreoffice-icon-theme-hicontrast
+
+if [ $kone = "p" ]; then
+ # Vain pöytäkoneelle
+ zypper rm bluedevil libbluedevil2 synaptiks
+fi
+
+# Jos ei tarvitse tulostaa
+# zypper rm system-config-printer-common udev-configure-printer
+
+echo "Otetaanko Yast:n oletusteema pois käytöstä (k/e)?"
+read vastaus
+if [ $vastaus = "k" ]; then
+ mv /usr/share/YaST2/theme/current /usr/share/YaST2/theme/current~
+fi
+
+echo "Asetetaanko Zsh oletus shelliksi (k/e)?"
+read vastaus
+if [ $vastaus = "k" ]; then
+ chsh -s /bin/zsh
+fi
+
+echo '------Puhdistetaan välimuisti ------'
+sleep 1
+zypper clean
+
+echo '------ Valmista ------'
+
+exit $?
