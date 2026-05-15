@@ -1,0 +1,7 @@
+#!/bin/sh
+
+du -sh \
+  --exclude=.git \
+  --exclude='./**/tests' \
+  --exclude='./**/test' \
+  ./* | sort -hr
