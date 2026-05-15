@@ -29,7 +29,7 @@ yakuake_set_title () {
 # Ongelma: jos on useampi terminaali avoinna, niin valitsee sen, joka ensimmäisenä mätsää.
 if pgrep "yakuake" > /dev/null ; then
   yakuake_set_title
-elif pgrep "terminator" > /dev/null|pgrep "terminology" > /dev/null; then
+elif pgrep "terminator" >/dev/null|pgrep "terminology" > /dev/null; then
   # http://terminator-gtk3.readthedocs.io/en/latest/index.html
   printf '\033]0;%s\a' $title
 else
