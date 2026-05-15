@@ -1,20 +1,22 @@
-#!/bin/zsh
+#!/bin/sh
 
 # Update various software.
 
 set -e
 
-function has() {
+has() {
   command -v "$@" &> /dev/null
 }
 
-sudo dnf upgrade
+if has dnf; then
+  sudo dnf upgrade
+fi
 
 # Flatpaks
 if has flatpak; then
   echo -e "Updating flatpaks...\n"
   if flatpak info org.signal.Signal >/dev/null 2>&1; then
-    flatpak update org.signal.Signal
+    flatpak update --assumeyes org.signal.Signal
   fi
 fi
 
@@ -42,9 +44,10 @@ fi
 # https://github.com/houseabsolute/ubi
 if has ubi; then
   echo "Updating moor and ripgrep with ubi to /usr/local/bin .."
-  sudo ubi --project walles/moor --in "/usr/local/bin"
-  sudo ubi --project BurntSushi/ripgrep --in "/usr/local/bin" -e rg
-  ubi --project michel-kraemer/zsh-patina --in ~/local/bin
+  sudo ubi --project walles/moor --in /usr/local/bin
+  sudo ubi --project BurntSushi/ripgrep --in /usr/local/bin -e rg
+  sudo ubi --project matheus-git/systemd-manager-tui --in /usr/local/bin
+  ubi --project michel-kraemer/zsh-patina --in ~/.local/bin
 fi
 
 # bob: A version manager for neovim. https://github.com/MordechaiHadad/bob
