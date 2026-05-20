@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+
+# Finnish dictionary lookup with sdcv
+
+if ! command -v sdcv >/dev/null 2>&1; then
+    echo "sdcv ei ole asennettu."
+    exit 1
+fi
+
+# Check that at least one Finnish dictionary exists
+if ! find /usr/share/stardict/dic -type f \( -iname '*fi*ifo' -o -iname '*finnish*ifo' \) 2>/dev/null | grep -q .; then
+    echo 'StarDict sanakirjaa ei löytynyt.'
+    echo 'Lataa: http://www.dictinfo.com'
+    echo 'Pura tiedostot: /usr/share/stardict/dic/'
+    exit 1
+fi
+
+if [ -z "$1" ]; then
+    echo "Käyttö: $(basename "$0") <sana>"
+    exit 1
+fi
+
+word="$1"
+
+json="$(sdcv -j "$word" 2>/dev/null)"
+
+if [ "$json" = "[]" ]; then
+    echo "Ei löytynyt sanaa \"$word\", :-("
+    exit 1
+fi
+
+printf '%s\n' "$json" \
+    | jq -r '.[0].definition' \
+    | sed '/^[[:space:]]*$/d'
