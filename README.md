@@ -8,7 +8,15 @@ Some shell scrips I've written. Mostly in Bash. Some are simple and meant to be 
 - backup - A local backup script using Borg backup.
 - post-install - Linux desktop post installation script.
 - timer - Countdown timer that can take many time formats and shows countdown progress.
-[Based on this scripts.](https://github.com/lzh9102/bash-countdown) Bash is not ideal for rather long and complex scripts such as this but it was little hobby project.
+[Based on this scripts.](https://github.com/lzh9102/bash-countdown). Bash is not ideal for rather long and complex scripts such as this but it was little hobby project.
 - set-mouse-buttons.sh - Little start-up script for desktop Linux with X.org to set mouse
 buttons.
+- define - Get definition of word using dirst.org.
+- selitä - Get definition of word in finnish using Sdcv and StarDict.
+- big-bg - List biggest installed RPM packages by size.
+- tidyfiles - Change file nimes recursively to make them more CLI-friendly.
+- mount-luks - Mounts a LUKS encrypted device.
+- set-mouse-buttons - Swap input properties of selected mouse models.
+- check-x - Checks if packages needed for Xorg are installed.
+- changecar - Change characters in file names recursively.
 - other smaller ones.
