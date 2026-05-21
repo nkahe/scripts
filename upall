@@ -51,6 +51,9 @@ fi
 
 if has ubi; then
   echo "Updating moor and ripgrep with ubi to /usr/local/bin .."
+  if [[ ! -d  $HOME/.local/bin ]]; then
+    mkdir $HOME/.local/bin
+  fi
   sudo ubi --project walles/moor --in /usr/local/bin
   sudo ubi --project BurntSushi/ripgrep --in /usr/local/bin -e rg
   sudo ubi --project matheus-git/systemd-manager-tui --in /usr/local/bin
