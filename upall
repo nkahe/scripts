@@ -42,6 +42,13 @@ fi
 
 # houseabsolute/ubi: The Universal Binary Installer
 # https://github.com/houseabsolute/ubi
+if ! has ubi; then
+  echo "Install Ubi - Universal binary installer?"
+  sudo curl --silent --location \
+      https://raw.githubusercontent.com/houseabsolute/ubi/master/bootstrap/bootstrap-ubi.sh |
+      sh
+fi
+
 if has ubi; then
   echo "Updating moor and ripgrep with ubi to /usr/local/bin .."
   sudo ubi --project walles/moor --in /usr/local/bin
@@ -53,11 +60,6 @@ fi
 # bob: A version manager for neovim. https://github.com/MordechaiHadad/bob
 if has bob; then
   bob update
-fi
-
-file=$HOME/scripts/install-kitty.sh
-if [ -f $file ]; then
-  . "$file"
 fi
 
 ## Zsh framework
