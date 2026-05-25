@@ -13,7 +13,7 @@ declare -a common_packages=(
   bat borgbackup btop ccze cheat colordiff cronie-anacron
   delta duf earlyoom eza fd-find fzf git-core grc htop
   inxi make navi ncdu neovim nerdfontssymbolsonly-nerd-fonts
-  p7zip powerline-fonts pydf python3-pip ripgrep smartmontools
+  p7zip powerline-fonts pydf python3-pip ripgrep sdcv smartmontools
   translate-shell trash-cli units unrar yp-tools zoxide zsh
 )
 
