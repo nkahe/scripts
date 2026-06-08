@@ -5,6 +5,7 @@ set -euo pipefail
 DEFAULT_N=100
 N="$DEFAULT_N"
 REVERSE=0
+PIP_MODE=0
 
 show_help() {
   cat <<EOF
@@ -16,12 +17,13 @@ Options:
   -n <number>       Number of packages to show (used for tail).
                     Default: ${DEFAULT_N}
   -r, --reverse     Reverse the final output order.
+  -p, --pip         List installed Python packages by size.
   -h, --help        Show this help and exit
 
 Examples:
-  ptop
-  ptop -n 20
-  ptop -n 50 --reverse
+  $("basename" "$0")
+  $("basename" "$0") -n 20
+  $("basename" "$0") -n 50 --reverse
 EOF
 }
 
@@ -41,6 +43,10 @@ while [[ $# -gt 0 ]]; do
       REVERSE=1
       shift
       ;;
+    -p|--pip)
+      PIP_MODE=1
+      shift
+      ;;
     -h|--help)
       show_help
       exit 0
@@ -53,13 +59,43 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-cmd=(
+list_rpm_packages() {
   rpm -qa --queryformat="%{SIZE} %{NAME} %{VERSION}\n"
-)
+}
+
+list_pip_packages() {
+  if ! command -v pip >/dev/null 2>&1; then
+    echo "Error: pip is not installed." >&2
+    exit 1
+  fi
+
+  python3 - <<'PY'
+import importlib.metadata as md
+
+rows = []
+for dist in md.distributions():
+    name = dist.metadata.get("Name") or dist.metadata.get("Summary") or "unknown"
+    version = dist.version or ""
+    size = 0
+    for file in dist.files or []:
+        try:
+            size += dist.locate_file(file).stat().st_size
+        except OSError:
+            pass
+    rows.append((size, name, version))
+
+for size, name, version in rows:
+    print(f"{size} {name} {version}")
+PY
+}
 
 # build pipeline explicitly for clarity
 pipeline() {
-  "${cmd[@]}" \
+  if [[ "$PIP_MODE" -eq 1 ]]; then
+    list_pip_packages
+  else
+    list_rpm_packages
+  fi \
     | sort --key=1 --numeric-sort \
     | tail --lines="$N" \
     | awk '{size=$1; $1=""; print size, $0}' \
