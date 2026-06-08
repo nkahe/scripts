@@ -1,5 +1,5 @@
 #!/bin/sh
-# Change in file names recursively: ' ' ',' '_-_' -> _  ja ( ) [ ]
+# Change in file names recursively: ' ' ',' '_-_' -> _  and ( ) [ ]
 
 if [ -z $1 ];then echo Give target directory; exit 0;fi
 

@@ -89,8 +89,9 @@ make_dirs() {
 
 make_symlinks() {
   echo 'Making necessary symlinks..' && sleep $moment
-  [[ ! -d "$HOME"/.fonts ]] && ln -sdv "$HOME"/linux/.fonts "$HOME"/.fonts
-  [[ ! -e "$HOME"/.todo ]] && ln -sdv "$HOME"/Sync/todo "$HOME"/.todo
+  local fonts_link="${XDG_DATA_HOME:-$HOME/.local/share}/fonts"
+  [[ ! -d $fonts_link ]] && ln -sdv "$HOME"/MegaSync/.fonts "$fonts_link"
+  [[ ! -e "$HOME"/.todo ]] && ln -sdv "$HOME"/MegaSync/todo "$HOME"/.todo
   if has vim && [[ ! -e "$HOME/.vim" ]]; then
     ln -sdv "$HOME"/.config/nvim "$HOME"/.vim
   fi
@@ -260,6 +261,17 @@ install_zinit() {
   fi
 }
 
+# Antidote package manager.
+install_antidote() {
+  # Source antidote
+  ad_path="${XDG_DATA_HOME:-${HOME}/.local/share}/antidote"
+  if [[ ! -e $ad_path/antidote.zsh ]]; then
+    # first, run this from an interactive zsh terminal session:
+    git clone --depth=1 https://github.com/mattmc3/antidote.git $ad_path
+    . "$ad_path/antidote.zsh"
+  fi
+}
+
 # Remove unnecessary packages if found.
 remove_packages() {
   declare -a removable_packages=()
@@ -270,7 +282,7 @@ remove_packages() {
   if [[ "${#removable_packages[@]}" -ne 0 ]]; then
     echo -e "\nRemoving unnecessary packages...\n"
   fi
-  sudo $uninstall ${removable_packages[@]}
+  sudo "$uninstall" "${removable_packages[@]}"
 }
 
 main() {
@@ -295,7 +307,7 @@ main() {
   # make_symlinks_root
   remove_packages
   #change_to_zsh
-  #install_zinit
+  install_antidote
 }
 
 main
