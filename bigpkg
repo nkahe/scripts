@@ -6,12 +6,14 @@ DEFAULT_N=100
 N="$DEFAULT_N"
 REVERSE=0
 PIP_MODE=0
+PKG_MANAGER=""
 
 show_help() {
   cat <<EOF
 Usage: $("basename" "$0") [OPTIONS]
 
-List installed RPM packages by size.
+List installed rpm or deb packages by size depending if rpm or dpkg is
+  installed or alternatively Python pip packages.
 
 Options:
   -n <number>       Number of packages to show (used for tail).
@@ -63,6 +65,11 @@ list_rpm_packages() {
   rpm -qa --queryformat="%{SIZE} %{NAME} %{VERSION}\n"
 }
 
+list_dpkg_packages() {
+  dpkg-query -W -f='${Installed-Size} ${Package} ${Version}\n' \
+    | awk '{print $1 * 1024, $2, $3}'
+}
+
 list_pip_packages() {
   if ! command -v pip >/dev/null 2>&1; then
     echo "Error: pip is not installed." >&2
@@ -89,10 +96,23 @@ for size, name, version in rows:
 PY
 }
 
+if [[ "$PIP_MODE" -eq 0 ]]; then
+  if command -v rpm >/dev/null 2>&1; then
+    PKG_MANAGER="rpm"
+  elif command -v dpkg >/dev/null 2>&1; then
+    PKG_MANAGER="dpkg"
+  else
+    echo "Error: neither rpm nor dpkg is installed." >&2
+    exit 1
+  fi
+fi
+
 # build pipeline explicitly for clarity
 pipeline() {
   if [[ "$PIP_MODE" -eq 1 ]]; then
     list_pip_packages
+  elif [[ "$PKG_MANAGER" == "dpkg" ]]; then
+    list_dpkg_packages
   else
     list_rpm_packages
   fi \
