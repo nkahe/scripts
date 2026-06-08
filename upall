@@ -65,6 +65,11 @@ if has bob; then
   bob update
 fi
 
+if has pip; then
+  pip install --upgrade termdown
+  pip install --upgrade thefuck
+fi
+
 ## Zsh framework
 
 # ZINIT_HOME=${ZINIT_HOME:-$HOME/.local/share/zinit}
