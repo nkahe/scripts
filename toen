@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+
+# Translate finnish words to english usind dict.
+
+if ! command -v dict >/dev/null 2>&1; then
+    echo "dict isn't installed."
+    exit 1
+fi
+
+if [ -z "$1" ]; then
+  echo "Usage: $(basename "$0") <finnish word>"
+  exit 1
+fi
+
+db="fd-fin-eng"
+
+dict -d "$db" "$@" \
+  | sed -E '/definition?/d' \
+  | sed -E '/^From /d' \
+  | sed -E 's/\[[^]]*\]//g' \
+  | sed '/^[[:space:]]*$/d'
